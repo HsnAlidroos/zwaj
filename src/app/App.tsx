@@ -4,12 +4,15 @@ import { LanguageToggle } from '@/app/components/LanguageToggle';
 import { DatePicker } from '@/app/components/DatePicker';
 import { ShareButton } from '@/app/components/ShareButton';
 import { Celebration } from '@/app/components/Celebration';
+import { UsersSidebar, displayName, type WeddingUser } from '@/app/components/UsersSidebar';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Maximize2, Minimize2 } from 'lucide-react';
 
+const DEFAULT_SLUG = 'hassan';
+
 export default function App() {
   const [language, setLanguage] = useState('en');
-  // Default wedding date: November 5, 2026
+  // Default wedding date (Hassan Alidroos), replaced once users load
   const [weddingDate, setWeddingDate] = useState('2026-12-05T00:00:00');
 
   interface CelebrationItem {
@@ -26,24 +29,45 @@ export default function App() {
   const captureRef = useRef(null);
 
   const [isDone, setIsDone] = useState(() => new Date(weddingDate).getTime() <= Date.now());
-  const [ownerName, setOwnerName] = useState('');
+  const [users, setUsers] = useState<WeddingUser[]>([]);
+  const [activeUser, setActiveUser] = useState<WeddingUser | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const handleComplete = useCallback(() => setIsDone(true), []);
 
-  const applyUser = (user: { slug: string; name: string; wedding_date: string }) => {
-    setOwnerName(user.name);
+  const applyUser = (user: WeddingUser) => {
+    setActiveUser(user);
     setWeddingDate(user.wedding_date);
     setIsDone(new Date(user.wedding_date).getTime() <= Date.now());
   };
 
-  // Each user has their own page at /<slug>
+  // Each user has their own page at /<slug>; the home page shows the default user
+  const showUserFromPath = (list: WeddingUser[]) => {
+    const slug = window.location.pathname.slice(1) || DEFAULT_SLUG;
+    const user = list.find(u => u.slug === slug) ?? list.find(u => u.slug === DEFAULT_SLUG);
+    if (user) applyUser(user);
+  };
+
   useEffect(() => {
-    const slug = window.location.pathname.slice(1);
-    if (!slug) return;
-    fetch(`/api/users?slug=${encodeURIComponent(slug)}`)
-      .then(res => (res.ok ? res.json() : null))
-      .then(user => user && applyUser(user))
+    let list: WeddingUser[] = [];
+    fetch('/api/users')
+      .then(res => (res.ok ? res.json() : []))
+      .then((data: WeddingUser[]) => {
+        list = data;
+        setUsers(data);
+        showUserFromPath(data);
+      })
       .catch(() => {});
+
+    const onPopState = () => showUserFromPath(list);
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
+  const handleSelectUser = (user: WeddingUser) => {
+    window.history.pushState(null, '', user.slug === DEFAULT_SLUG ? '/' : `/${user.slug}`);
+    applyUser(user);
+    setIsSidebarOpen(false);
+  };
 
   const handleCreate = async (date: string, name: string) => {
     const res = await fetch('/api/users', {
@@ -52,8 +76,9 @@ export default function App() {
       body: JSON.stringify({ name, weddingDate: date })
     });
     if (!res.ok) throw new Error('Failed to save');
-    const user = await res.json();
+    const user: WeddingUser = await res.json();
     window.history.pushState(null, '', `/${user.slug}`);
+    setUsers(prev => [prev[0], user, ...prev.slice(1)].filter(Boolean));
     applyUser(user);
   };
 
@@ -122,8 +147,32 @@ export default function App() {
   const currentText = text[language as keyof typeof text] || text.en;
   const isRTL = language === 'ar';
 
+  const ownerName = activeUser ? displayName(activeUser, language) : '';
+
+  const sidebar = (
+    <UsersSidebar
+      users={users}
+      activeSlug={activeUser?.slug ?? ''}
+      language={language}
+      isOpen={isSidebarOpen}
+      onOpenChange={setIsSidebarOpen}
+      onSelect={handleSelectUser}
+    />
+  );
+
+  const sidebarCorner = (
+    <div className={`fixed top-4 md:top-6 ${isRTL ? 'right-4 md:right-6' : 'left-4 md:left-6'} z-[110]`}>
+      {sidebar}
+    </div>
+  );
+
   if (isDone) {
-    return <Celebration language={language} name={ownerName} onSubmit={handleCreate} />;
+    return (
+      <>
+        <Celebration language={language} name={ownerName} onSubmit={handleCreate} />
+        {sidebarCorner}
+      </>
+    );
   }
 
   return (
@@ -132,6 +181,8 @@ export default function App() {
       dir={isRTL ? 'rtl' : 'ltr'}
       onClick={handleClick}
     >
+      {!isFullScreen && sidebarCorner}
+
       {/* Celebrations overlay */}
       {celebrations.map(celebration => {
         const celebrationIsRTL = celebration.language === 'ar';
@@ -181,7 +232,7 @@ export default function App() {
           >
             <div className="max-w-7xl mx-auto flex justify-between items-center">
               <motion.div
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 ps-14"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}

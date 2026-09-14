@@ -17,9 +17,12 @@ const CREATE_USERS = `CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   slug TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
+  name_en TEXT,
   wedding_date TEXT NOT NULL,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )`;
+
+export const DEFAULT_SLUG = 'hassan';
 
 let ready;
 export function ensureUsersTable() {
@@ -39,6 +42,16 @@ export function ensureUsersTable() {
       await getDb().execute('DROP TABLE users_old');
     }
     await getDb().execute(CREATE_USERS);
+    const cols = await getDb().execute('PRAGMA table_info(users)');
+    if (!cols.rows.some(r => r.name === 'name_en')) {
+      await getDb().execute('ALTER TABLE users ADD COLUMN name_en TEXT');
+    }
+    // The default countdown shown on the home page
+    await getDb().execute({
+      sql: `INSERT INTO users (slug, name, name_en, wedding_date) VALUES (?, ?, ?, ?)
+            ON CONFLICT(slug) DO UPDATE SET name = excluded.name, name_en = excluded.name_en`,
+      args: [DEFAULT_SLUG, 'حسن علوي حسن محمد العيدروس', 'Hassan Alidroos', '2026-12-05T00:00'],
+    });
   })().catch(err => {
     ready = undefined;
     throw err;
@@ -60,10 +73,21 @@ export async function addUser(name, weddingDate) {
   return getUser(slug);
 }
 
+const USER_COLUMNS = 'slug, name, name_en, wedding_date, created_at';
+
+export async function listUsers() {
+  await ensureUsersTable();
+  // Default user first, then newest
+  const { rows } = await getDb().execute(
+    `SELECT ${USER_COLUMNS} FROM users ORDER BY slug = '${DEFAULT_SLUG}' DESC, id DESC LIMIT 200`
+  );
+  return rows;
+}
+
 export async function getUser(slug) {
   await ensureUsersTable();
   const { rows } = await getDb().execute({
-    sql: 'SELECT slug, name, wedding_date, created_at FROM users WHERE slug = ?',
+    sql: `SELECT ${USER_COLUMNS} FROM users WHERE slug = ?`,
     args: [slug],
   });
   return rows[0] ?? null;
