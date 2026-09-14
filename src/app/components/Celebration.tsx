@@ -4,13 +4,14 @@ import { DatePicker } from '@/app/components/DatePicker';
 
 interface CelebrationProps {
     language: string;
-    onDateSelect: (date: string) => void;
+    name?: string;
+    onSubmit: (date: string, name: string) => void | Promise<void>;
 }
 
 const floaters = ['🎈', '💖', '🎉', '💕', '✨', '💍', '🌸', '💗'];
 const confettiColors = ['#D4AF37', '#E8C872', '#C19B2F', '#F4D9A0', '#E6A4B4', '#FFFFFF'];
 
-export function Celebration({ language, onDateSelect }: CelebrationProps) {
+export function Celebration({ language, name, onSubmit }: CelebrationProps) {
     const isRTL = language === 'ar';
 
     const text = {
@@ -110,6 +111,15 @@ export function Celebration({ language, onDateSelect }: CelebrationProps) {
                     {t.sub}
                 </p>
 
+                {name && (
+                    <p
+                        className="mt-4 text-3xl md:text-4xl text-[#8B6914]"
+                        style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
+                    >
+                        {name}
+                    </p>
+                )}
+
                 <p
                     className="mt-6 text-xl md:text-3xl text-[#2C2C2C] leading-relaxed"
                     style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
@@ -118,7 +128,7 @@ export function Celebration({ language, onDateSelect }: CelebrationProps) {
                 </p>
 
                 <div className="mt-10">
-                    <DatePicker onDateSelect={onDateSelect} language={language} />
+                    <DatePicker onSubmit={onSubmit} language={language} />
                 </div>
             </motion.div>
         </div>

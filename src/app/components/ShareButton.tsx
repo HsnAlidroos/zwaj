@@ -91,11 +91,11 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
 
         const baseMessage = customMessage || currentText.defaultMessage;
         const dateText = formatDate(weddingDate);
-        const websiteUrl = 'https://zwaj.hsnalidroos.dev';
+        const websiteUrl = window.location.href;
         return `${baseMessage} \n${dateText} \n${timeString} \n\n${websiteUrl} `;
     };
 
-    const shareUrl = 'https://zwaj.hsnalidroos.dev';
+    const shareUrl = window.location.href;
 
     const handleLinkShare = (platformAction: () => void) => {
         if (shareType === 'image') {

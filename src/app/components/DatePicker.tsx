@@ -3,25 +3,35 @@ import { Calendar, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface DatePickerProps {
-    onDateSelect: (date: string) => void;
+    // Receives the chosen date and name; may throw to show an error
+    onSubmit: (date: string, name: string) => void | Promise<void>;
     language: string;
 }
 
-export function DatePicker({ onDateSelect, language }: DatePickerProps) {
+export function DatePicker({ onSubmit, language }: DatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
+    const [name, setName] = useState('');
     const [error, setError] = useState('');
+    const [saving, setSaving] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedDate) return;
+        if (!selectedDate || !name.trim()) return;
         if (new Date(selectedDate).getTime() <= Date.now()) {
             setError(currentText.pastError);
             return;
         }
         setError('');
-        onDateSelect(selectedDate);
-        setIsOpen(false);
+        setSaving(true);
+        try {
+            await onSubmit(selectedDate, name.trim());
+            setIsOpen(false);
+        } catch {
+            setError(currentText.saveError);
+        } finally {
+            setSaving(false);
+        }
     };
 
     // Local "now" formatted for datetime-local's min attribute
@@ -30,19 +40,27 @@ export function DatePicker({ onDateSelect, language }: DatePickerProps) {
 
     const text: Record<string, Record<string, string>> = {
         en: {
-            button: 'Set Wedding Date',
-            title: 'Choose Your Wedding Date',
+            button: 'Create Your Countdown',
+            title: 'Create Your Countdown',
+            nameLabel: 'Your Names',
+            namePlaceholder: 'e.g. Ahmed & Sara',
+            saving: 'Saving...',
+            saveError: 'Could not save, please try again',
             label: 'Wedding Date',
             cancel: 'Cancel',
-            save: 'Save Date',
+            save: 'Create',
             pastError: 'Please choose a date in the future'
         },
         ar: {
-            button: 'تحديد تاريخ الزفاف',
-            title: 'اختر تاريخ زفافك',
+            button: 'أنشئ عدّادك',
+            title: 'أنشئ عدّاد زفافك',
+            nameLabel: 'الاسم',
+            namePlaceholder: 'مثال: أحمد وسارة',
+            saving: 'جارٍ الحفظ...',
+            saveError: 'تعذّر الحفظ، حاول مرة أخرى',
             label: 'تاريخ الزفاف',
             cancel: 'إلغاء',
-            save: 'حفظ التاريخ',
+            save: 'إنشاء',
             pastError: 'الرجاء اختيار تاريخ في المستقبل'
         }
     };
@@ -103,6 +121,24 @@ export function DatePicker({ onDateSelect, language }: DatePickerProps) {
                                 </div>
 
                                 <form onSubmit={handleSubmit}>
+                                    <div className="mb-4">
+                                        <label
+                                            className="block mb-2 text-[#2C2C2C]"
+                                            style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+                                        >
+                                            {currentText.nameLabel}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={name}
+                                            maxLength={100}
+                                            placeholder={currentText.namePlaceholder}
+                                            onChange={(e) => setName(e.target.value)}
+                                            className="w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]"
+                                            required
+                                        />
+                                    </div>
+
                                     <div className="mb-6">
                                         <label
                                             className="block mb-2 text-[#2C2C2C]"
@@ -137,10 +173,11 @@ export function DatePicker({ onDateSelect, language }: DatePickerProps) {
                                         </button>
                                         <button
                                             type="submit"
+                                            disabled={saving}
                                             className="flex-1 px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2F] transition-all duration-300 shadow-md"
                                             style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                                         >
-                                            {currentText.save}
+                                            {saving ? currentText.saving : currentText.save}
                                         </button>
                                     </div>
                                 </form>

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { CountdownTimer } from '@/app/components/CountdownTimer';
 import { LanguageToggle } from '@/app/components/LanguageToggle';
 import { DatePicker } from '@/app/components/DatePicker';
@@ -26,11 +26,35 @@ export default function App() {
   const captureRef = useRef(null);
 
   const [isDone, setIsDone] = useState(() => new Date(weddingDate).getTime() <= Date.now());
+  const [ownerName, setOwnerName] = useState('');
   const handleComplete = useCallback(() => setIsDone(true), []);
 
-  const handleDateSelect = (newDate: string) => {
-    setWeddingDate(newDate);
-    setIsDone(new Date(newDate).getTime() <= Date.now());
+  const applyUser = (user: { slug: string; name: string; wedding_date: string }) => {
+    setOwnerName(user.name);
+    setWeddingDate(user.wedding_date);
+    setIsDone(new Date(user.wedding_date).getTime() <= Date.now());
+  };
+
+  // Each user has their own page at /<slug>
+  useEffect(() => {
+    const slug = window.location.pathname.slice(1);
+    if (!slug) return;
+    fetch(`/api/users?slug=${encodeURIComponent(slug)}`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(user => user && applyUser(user))
+      .catch(() => {});
+  }, []);
+
+  const handleCreate = async (date: string, name: string) => {
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, weddingDate: date })
+    });
+    if (!res.ok) throw new Error('Failed to save');
+    const user = await res.json();
+    window.history.pushState(null, '', `/${user.slug}`);
+    applyUser(user);
   };
 
   // Celebratory words in both languages
@@ -99,7 +123,7 @@ export default function App() {
   const isRTL = language === 'ar';
 
   if (isDone) {
-    return <Celebration language={language} onDateSelect={handleDateSelect} />;
+    return <Celebration language={language} name={ownerName} onSubmit={handleCreate} />;
   }
 
   return (
@@ -214,6 +238,14 @@ export default function App() {
             >
               {currentText.subtitle}
             </p>
+            {ownerName && (
+              <p
+                className="mt-4 text-2xl md:text-3xl text-[#D4AF37]"
+                style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
+              >
+                {ownerName}
+              </p>
+            )}
           </motion.div>
 
           {/* Countdown Timer */}
@@ -252,7 +284,7 @@ export default function App() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
               >
-                <DatePicker onDateSelect={handleDateSelect} language={language} />
+                <DatePicker onSubmit={handleCreate} language={language} />
               </motion.div>
 
               <motion.div
