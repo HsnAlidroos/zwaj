@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { UserRound, X, ImagePlus, Trash2, LogOut } from 'lucide-react';
+import { UserRound, X, ImagePlus, Trash2, LogOut, Pencil, AlertTriangle } from 'lucide-react';
+import { displayName, type WeddingUser } from '@/app/components/UsersSidebar';
 
 export const tokenKey = (slug: string) => `zwaj-token-${slug}`;
 
@@ -29,11 +30,15 @@ interface Profile {
 }
 
 interface ProfileDialogProps {
-    slug: string;
+    // Public data of the countdown being viewed
+    user: WeddingUser;
     language: string;
     // Called after saving so the page can show the new bio/photo
     onSaved: () => void;
+    onDeleted: () => void;
 }
+
+const DEFAULT_SLUG = 'hassan';
 
 const MAX_BIO = 500;
 
@@ -59,7 +64,8 @@ function resizeImage(file: File): Promise<string> {
     });
 }
 
-export function ProfileDialog({ slug, language, onSaved }: ProfileDialogProps) {
+export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDialogProps) {
+    const slug = user.slug;
     const [isOpen, setIsOpen] = useState(false);
     const [token, setToken] = useState<string | null>(null);
     const [pin, setPin] = useState('');
@@ -67,6 +73,10 @@ export function ProfileDialog({ slug, language, onSaved }: ProfileDialogProps) {
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
     const [saved, setSaved] = useState(false);
+    // Visitors see the public profile; the owner signs in to edit
+    const [showLogin, setShowLogin] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deletePin, setDeletePin] = useState('');
     const fileRef = useRef<HTMLInputElement>(null);
 
     const isRTL = language === 'ar';
@@ -74,8 +84,17 @@ export function ProfileDialog({ slug, language, onSaved }: ProfileDialogProps) {
 
     const text = {
         en: {
-            button: 'My Profile',
-            title: 'My Profile',
+            button: 'Profile',
+            title: 'Profile',
+            edit: 'Edit profile',
+            weddingDate: 'Wedding date',
+            empty: 'No description or photo yet',
+            deleteAccount: 'Delete account',
+            deleteWarning: 'This permanently deletes the countdown, photo and description.',
+            deletePinLabel: 'Enter your secret code to confirm',
+            confirmDelete: 'Delete permanently',
+            cancel: 'Cancel',
+            cannotDeleteDefault: 'The default countdown cannot be deleted',
             pinLabel: 'Enter your secret code',
             login: 'Sign in',
             wrongPin: 'Wrong code',
@@ -94,8 +113,17 @@ export function ProfileDialog({ slug, language, onSaved }: ProfileDialogProps) {
             badImage: 'Could not read this image'
         },
         ar: {
-            button: 'ملفي الشخصي',
-            title: 'ملفي الشخصي',
+            button: 'الملف الشخصي',
+            title: 'الملف الشخصي',
+            edit: 'تعديل الملف',
+            weddingDate: 'تاريخ الزواج',
+            empty: 'لا يوجد وصف أو صورة بعد',
+            deleteAccount: 'حذف الحساب',
+            deleteWarning: 'سيتم حذف العدّاد والصورة والوصف نهائياً.',
+            deletePinLabel: 'أدخل الرمز السري للتأكيد',
+            confirmDelete: 'حذف نهائي',
+            cancel: 'إلغاء',
+            cannotDeleteDefault: 'لا يمكن حذف العدّاد الافتراضي',
             pinLabel: 'أدخل الرمز السري',
             login: 'دخول',
             wrongPin: 'الرمز غير صحيح',
@@ -133,6 +161,9 @@ export function ProfileDialog({ slug, language, onSaved }: ProfileDialogProps) {
         setProfile(null);
         setPin('');
         setError('');
+        setShowLogin(false);
+        setConfirmDelete(false);
+        setDeletePin('');
         setToken(readToken(slug));
     }, [slug]);
 
@@ -204,10 +235,42 @@ export function ProfileDialog({ slug, language, onSaved }: ProfileDialogProps) {
         }
     };
 
+    const handleDelete = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!token) return;
+        setBusy(true);
+        setError('');
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ pin: deletePin })
+            });
+            if (res.status === 401) {
+                setError(t.wrongPin);
+                return;
+            }
+            if (res.status === 403) {
+                setError(t.cannotDeleteDefault);
+                return;
+            }
+            if (!res.ok) throw new Error('Failed');
+            saveToken(slug, null);
+            setIsOpen(false);
+            onDeleted();
+        } catch {
+            setError(t.failed);
+        } finally {
+            setBusy(false);
+        }
+    };
+
     const handleLogout = () => {
         saveToken(slug, null);
         setToken(null);
         setProfile(null);
+        setShowLogin(false);
+        setConfirmDelete(false);
     };
 
     const update = (patch: Partial<Profile>) => {
@@ -275,7 +338,42 @@ export function ProfileDialog({ slug, language, onSaved }: ProfileDialogProps) {
                                     </button>
                                 </div>
 
-                                {!token ? (
+                                {!token && !showLogin ? (
+                                    <div className="flex flex-col items-center text-center gap-4">
+                                        {user.photo && (
+                                            <img
+                                                src={user.photo}
+                                                alt=""
+                                                className="w-32 h-32 rounded-full object-cover border-4 border-[#D4AF37] shadow"
+                                            />
+                                        )}
+                                        <p
+                                            className="text-2xl text-[#8B6914]"
+                                            style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
+                                        >
+                                            {displayName(user, language)}
+                                        </p>
+                                        <p className="text-sm text-[#8B7355]">
+                                            {t.weddingDate}:{' '}
+                                            {new Date(user.wedding_date).toLocaleString(isRTL ? 'ar-SA' : 'en-US', {
+                                                year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit'
+                                            })}
+                                        </p>
+                                        {user.bio ? (
+                                            <p className="text-[#2C2C2C] whitespace-pre-line leading-relaxed">{user.bio}</p>
+                                        ) : (
+                                            !user.photo && <p className="text-sm text-[#8B7355]">{t.empty}</p>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowLogin(true)}
+                                            className="mt-2 flex items-center gap-2 text-sm px-4 py-2 border-2 border-[#D4AF37] rounded-full text-[#8B6914] hover:bg-[#F5F3EE]"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                            {t.edit}
+                                        </button>
+                                    </div>
+                                ) : !token ? (
                                     <form onSubmit={handleLogin}>
                                         <label className="block mb-2 text-[#2C2C2C]">{t.pinLabel}</label>
                                         <input
@@ -391,6 +489,59 @@ export function ProfileDialog({ slug, language, onSaved }: ProfileDialogProps) {
                                                 {saved ? t.saved : t.save}
                                             </button>
                                         </div>
+
+                                        {slug !== DEFAULT_SLUG && (
+                                            <div className="pt-4 border-t border-red-200">
+                                                {!confirmDelete ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setConfirmDelete(true);
+                                                            setError('');
+                                                        }}
+                                                        className="text-sm text-red-600 flex items-center gap-2 hover:underline"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                        {t.deleteAccount}
+                                                    </button>
+                                                ) : (
+                                                    <form onSubmit={handleDelete} className="rounded-lg bg-red-50 p-4 space-y-3">
+                                                        <p className="text-sm text-red-700 flex items-start gap-2">
+                                                            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                                                            {t.deleteWarning}
+                                                        </p>
+                                                        <label className="block text-sm text-[#2C2C2C]">{t.deletePinLabel}</label>
+                                                        <input
+                                                            type="password"
+                                                            value={deletePin}
+                                                            autoComplete="current-password"
+                                                            onChange={(e) => setDeletePin(e.target.value)}
+                                                            className="w-full px-4 py-2 border-2 border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 bg-white"
+                                                            required
+                                                        />
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setConfirmDelete(false);
+                                                                    setDeletePin('');
+                                                                }}
+                                                                className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg text-sm hover:bg-white"
+                                                            >
+                                                                {t.cancel}
+                                                            </button>
+                                                            <button
+                                                                type="submit"
+                                                                disabled={busy}
+                                                                className="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 disabled:opacity-60"
+                                                            >
+                                                                {t.confirmDelete}
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

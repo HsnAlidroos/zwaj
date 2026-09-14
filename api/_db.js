@@ -132,6 +132,11 @@ export async function checkPin(slug, pin) {
   return true;
 }
 
+export async function deleteUser(slug) {
+  await ensureUsersTable();
+  await getDb().execute({ sql: 'DELETE FROM users WHERE slug = ?', args: [slug] });
+}
+
 export async function getProfile(slug) {
   await ensureUsersTable();
   const { rows } = await getDb().execute({

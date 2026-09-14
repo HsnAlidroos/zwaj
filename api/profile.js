@@ -1,4 +1,4 @@
-import { getProfile, updateProfile } from './_db.js';
+import { DEFAULT_SLUG, checkPin, deleteUser, getProfile, updateProfile } from './_db.js';
 import { getSessionSlug } from './_auth.js';
 
 const MAX_BIO = 500;
@@ -22,7 +22,15 @@ export default async function handler(req, res) {
       }
       return res.status(200).json(await updateProfile(slug, { bio, photo, showBio: !!showBio, showPhoto: !!showPhoto }));
     }
-    res.setHeader('Allow', 'GET, PATCH');
+    if (req.method === 'DELETE') {
+      // The default countdown is recreated automatically, so it can't be deleted
+      if (slug === DEFAULT_SLUG) return res.status(403).json({ error: 'The default countdown cannot be deleted' });
+      const pin = String(req.body?.pin || '');
+      if (!pin || !(await checkPin(slug, pin))) return res.status(401).json({ error: 'Wrong code' });
+      await deleteUser(slug);
+      return res.status(200).json({ ok: true });
+    }
+    res.setHeader('Allow', 'GET, PATCH, DELETE');
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     return res.status(500).json({ error: err.message });

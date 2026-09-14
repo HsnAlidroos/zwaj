@@ -97,6 +97,15 @@ export default function App() {
     setIsSidebarOpen(false);
   };
 
+  const handleDeleted = () => {
+    const deletedSlug = activeUser?.slug;
+    const remaining = users.filter(u => u.slug !== deletedSlug);
+    setUsers(remaining);
+    window.history.pushState(null, '', '/');
+    const fallback = remaining.find(u => u.slug === DEFAULT_SLUG);
+    if (fallback) applyUser(fallback);
+  };
+
   const handleCreate = async (date: string, name: string, nameEn: string, pin: string) => {
     const res = await fetch('/api/users', {
       method: 'POST',
@@ -195,7 +204,12 @@ export default function App() {
   const dockOffset = isSidebarDocked ? 'md:ps-72' : '';
 
   const profileButton = activeUser && (
-    <ProfileDialog slug={activeUser.slug} language={language} onSaved={() => loadUserDetails(activeUser.slug)} />
+    <ProfileDialog
+      user={activeUser}
+      language={language}
+      onSaved={() => loadUserDetails(activeUser.slug)}
+      onDeleted={handleDeleted}
+    />
   );
 
   const profileDetails = activeUser && (activeUser.photo || activeUser.bio) && (
