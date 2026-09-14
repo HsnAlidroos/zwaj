@@ -10,14 +10,23 @@ interface DatePickerProps {
 export function DatePicker({ onDateSelect, language }: DatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
+    const [error, setError] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedDate) {
-            onDateSelect(selectedDate);
-            setIsOpen(false);
+        if (!selectedDate) return;
+        if (new Date(selectedDate).getTime() <= Date.now()) {
+            setError(currentText.pastError);
+            return;
         }
+        setError('');
+        onDateSelect(selectedDate);
+        setIsOpen(false);
     };
+
+    // Local "now" formatted for datetime-local's min attribute
+    const now = new Date();
+    const minDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
     const text: Record<string, Record<string, string>> = {
         en: {
@@ -25,14 +34,16 @@ export function DatePicker({ onDateSelect, language }: DatePickerProps) {
             title: 'Choose Your Wedding Date',
             label: 'Wedding Date',
             cancel: 'Cancel',
-            save: 'Save Date'
+            save: 'Save Date',
+            pastError: 'Please choose a date in the future'
         },
         ar: {
             button: 'تحديد تاريخ الزفاف',
             title: 'اختر تاريخ زفافك',
             label: 'تاريخ الزفاف',
             cancel: 'إلغاء',
-            save: 'حفظ التاريخ'
+            save: 'حفظ التاريخ',
+            pastError: 'الرجاء اختيار تاريخ في المستقبل'
         }
     };
 
@@ -102,10 +113,17 @@ export function DatePicker({ onDateSelect, language }: DatePickerProps) {
                                         <input
                                             type="datetime-local"
                                             value={selectedDate}
-                                            onChange={(e) => setSelectedDate(e.target.value)}
+                                            min={minDate}
+                                            onChange={(e) => {
+                                                setSelectedDate(e.target.value);
+                                                setError('');
+                                            }}
                                             className="w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]"
                                             required
                                         />
+                                        {error && (
+                                            <p className="mt-2 text-sm text-red-600">{error}</p>
+                                        )}
                                     </div>
 
                                     <div className="flex gap-3">

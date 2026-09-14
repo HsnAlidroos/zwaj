@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { CountdownTimer } from '@/app/components/CountdownTimer';
 import { LanguageToggle } from '@/app/components/LanguageToggle';
 import { DatePicker } from '@/app/components/DatePicker';
 import { ShareButton } from '@/app/components/ShareButton';
+import { Celebration } from '@/app/components/Celebration';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Maximize2, Minimize2 } from 'lucide-react';
 
@@ -11,7 +12,7 @@ export default function App() {
   // Default wedding date: November 5, 2026
   const [weddingDate, setWeddingDate] = useState('2026-12-05T00:00:00');
 
-  interface Celebration {
+  interface CelebrationItem {
     id: number;
     x: number;
     y: number;
@@ -20,12 +21,16 @@ export default function App() {
     language: string;
   }
 
-  const [celebrations, setCelebrations] = useState<Celebration[]>([]);
+  const [celebrations, setCelebrations] = useState<CelebrationItem[]>([]);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const captureRef = useRef(null);
 
+  const [isDone, setIsDone] = useState(() => new Date(weddingDate).getTime() <= Date.now());
+  const handleComplete = useCallback(() => setIsDone(true), []);
+
   const handleDateSelect = (newDate: string) => {
     setWeddingDate(newDate);
+    setIsDone(new Date(newDate).getTime() <= Date.now());
   };
 
   // Celebratory words in both languages
@@ -54,7 +59,7 @@ export default function App() {
     // Randomly choose to show either a balloon or a word
     const showBalloon = Math.random() > 0.5;
 
-    const newCelebration: Celebration = {
+    const newCelebration: CelebrationItem = {
       id,
       x,
       y,
@@ -92,6 +97,10 @@ export default function App() {
 
   const currentText = text[language as keyof typeof text] || text.en;
   const isRTL = language === 'ar';
+
+  if (isDone) {
+    return <Celebration language={language} onDateSelect={handleDateSelect} />;
+  }
 
   return (
     <div
@@ -214,7 +223,7 @@ export default function App() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mb-12 md:mb-16"
           >
-            <CountdownTimer targetDate={weddingDate} language={language} />
+            <CountdownTimer targetDate={weddingDate} language={language} onComplete={handleComplete} />
           </motion.div>
 
           {/* Decorative Elements */}

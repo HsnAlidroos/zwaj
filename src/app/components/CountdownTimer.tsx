@@ -1,53 +1,75 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
+import { intervalToDuration } from 'date-fns';
 
 interface CountdownTimerProps {
     targetDate: string;
     language: string;
+    onComplete?: () => void;
 }
 
-export function CountdownTimer({ targetDate, language }: CountdownTimerProps) {
-    const [timeLeft, setTimeLeft] = useState({
-        months: 0,
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0
-    });
+type Unit = 'years' | 'months' | 'days' | 'hours' | 'minutes' | 'seconds';
+
+const emptyTime: Record<Unit, number> = { years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+// Arabic forms: [singular, dual, plural (3-10), accusative singular (11+)]
+const arabicForms: Record<Unit, [string, string, string, string]> = {
+    years: ['سنة', 'سنتان', 'سنوات', 'سنة'],
+    months: ['شهر', 'شهران', 'أشهر', 'شهرًا'],
+    days: ['يوم', 'يومان', 'أيام', 'يومًا'],
+    hours: ['ساعة', 'ساعتان', 'ساعات', 'ساعة'],
+    minutes: ['دقيقة', 'دقيقتان', 'دقائق', 'دقيقة'],
+    seconds: ['ثانية', 'ثانيتان', 'ثوانٍ', 'ثانية']
+};
+
+const englishForms: Record<Unit, [string, string]> = {
+    years: ['Year', 'Years'],
+    months: ['Month', 'Months'],
+    days: ['Day', 'Days'],
+    hours: ['Hour', 'Hours'],
+    minutes: ['Minute', 'Minutes'],
+    seconds: ['Second', 'Seconds']
+};
+
+export function pluralize(unit: Unit, n: number, language: string) {
+    if (language === 'ar') {
+        const [one, two, few, many] = arabicForms[unit];
+        if (n === 1) return one;
+        if (n === 2) return two;
+        if (n >= 3 && n <= 10) return few;
+        return many;
+    }
+    const [one, other] = englishForms[unit];
+    return n === 1 ? one : other;
+}
+
+export function CountdownTimer({ targetDate, language, onComplete }: CountdownTimerProps) {
+    const [timeLeft, setTimeLeft] = useState(emptyTime);
+    const completedRef = useRef(false);
 
     useEffect(() => {
+        completedRef.current = false;
+
         const calculateTimeLeft = () => {
             const now = new Date();
             const target = new Date(targetDate);
-            const difference = target.getTime() - now.getTime();
 
-            if (difference > 0) {
-                // Calculate total days
-                const totalDays = Math.floor(difference / (1000 * 60 * 60 * 24));
-
-                // Calculate months (approximate)
-                const months = Math.floor(totalDays / 30);
-                const remainingDays = totalDays % 30;
-
-                const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-                const minutes = Math.floor((difference / 1000 / 60) % 60);
-                const seconds = Math.floor((difference / 1000) % 60);
-
+            if (target.getTime() > now.getTime()) {
+                const d = intervalToDuration({ start: now, end: target });
                 setTimeLeft({
-                    months,
-                    days: remainingDays,
-                    hours,
-                    minutes,
-                    seconds
+                    years: d.years ?? 0,
+                    months: d.months ?? 0,
+                    days: d.days ?? 0,
+                    hours: d.hours ?? 0,
+                    minutes: d.minutes ?? 0,
+                    seconds: d.seconds ?? 0
                 });
             } else {
-                setTimeLeft({
-                    months: 0,
-                    days: 0,
-                    hours: 0,
-                    minutes: 0,
-                    seconds: 0
-                });
+                setTimeLeft(emptyTime);
+                if (!completedRef.current) {
+                    completedRef.current = true;
+                    onComplete?.();
+                }
             }
         };
 
@@ -55,38 +77,27 @@ export function CountdownTimer({ targetDate, language }: CountdownTimerProps) {
         const timer = setInterval(calculateTimeLeft, 1000);
 
         return () => clearInterval(timer);
-    }, [targetDate]);
+    }, [targetDate, onComplete]);
 
-    const labels: Record<string, Record<string, string>> = {
-        en: {
-            months: 'Months',
-            days: 'Days',
-            hours: 'Hours',
-            minutes: 'Minutes',
-            seconds: 'Seconds'
-        },
-        ar: {
-            months: 'شهور',
-            days: 'أيام',
-            hours: 'ساعات',
-            minutes: 'دقائق',
-            seconds: 'ثواني'
-        }
-    };
-
-    const currentLabels = labels[language] || labels.en;
     const isRTL = language === 'ar';
+    const units: Unit[] = timeLeft.years > 0
+        ? ['years', 'months', 'days', 'hours', 'minutes', 'seconds']
+        : ['months', 'days', 'hours', 'minutes', 'seconds'];
 
     return (
         <div
             className={`flex flex-wrap justify-center gap-4 md:gap-8 ${isRTL ? 'rtl' : 'ltr'}`}
             dir={isRTL ? 'rtl' : 'ltr'}
         >
-            <TimerUnit value={timeLeft.months} label={currentLabels.months} language={language} />
-            <TimerUnit value={timeLeft.days} label={currentLabels.days} language={language} />
-            <TimerUnit value={timeLeft.hours} label={currentLabels.hours} language={language} />
-            <TimerUnit value={timeLeft.minutes} label={currentLabels.minutes} language={language} />
-            <TimerUnit value={timeLeft.seconds} label={currentLabels.seconds} language={language} isSeconds />
+            {units.map(unit => (
+                <TimerUnit
+                    key={unit}
+                    value={timeLeft[unit]}
+                    label={pluralize(unit, timeLeft[unit], language)}
+                    language={language}
+                    isSeconds={unit === 'seconds'}
+                />
+            ))}
         </div>
     );
 }
