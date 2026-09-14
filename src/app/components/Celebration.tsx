@@ -1,17 +1,20 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { DatePicker } from '@/app/components/DatePicker';
 
 interface CelebrationProps {
     language: string;
     name?: string;
+    details?: ReactNode;
+    actions?: ReactNode;
+    className?: string;
     onSubmit: (date: string, nameAr: string, nameEn: string) => void | Promise<void>;
 }
 
 const floaters = ['🎈', '💖', '🎉', '💕', '✨', '💍', '🌸', '💗'];
 const confettiColors = ['#D4AF37', '#E8C872', '#C19B2F', '#F4D9A0', '#E6A4B4', '#FFFFFF'];
 
-export function Celebration({ language, name, onSubmit }: CelebrationProps) {
+export function Celebration({ language, name, details, actions, className = '', onSubmit }: CelebrationProps) {
     const isRTL = language === 'ar';
 
     const text = {
@@ -55,7 +58,7 @@ export function Celebration({ language, name, onSubmit }: CelebrationProps) {
 
     return (
         <div
-            className="fixed inset-0 z-[100] overflow-hidden bg-gradient-to-br from-[#FBF6E9] via-[#F5E9C8] to-[#EAD49A] flex flex-col items-center justify-center px-4"
+            className={`fixed inset-0 z-[100] overflow-x-hidden bg-gradient-to-br from-[#FBF6E9] via-[#F5E9C8] to-[#EAD49A] flex flex-col items-center justify-center px-4 overflow-y-auto ${className}`}
             dir={isRTL ? 'rtl' : 'ltr'}
         >
             {/* Confetti */}
@@ -120,6 +123,8 @@ export function Celebration({ language, name, onSubmit }: CelebrationProps) {
                     </p>
                 )}
 
+                {details}
+
                 <p
                     className="mt-6 text-xl md:text-3xl text-[#2C2C2C] leading-relaxed"
                     style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
@@ -127,8 +132,9 @@ export function Celebration({ language, name, onSubmit }: CelebrationProps) {
                     {t.dua}
                 </p>
 
-                <div className="mt-10">
+                <div className="mt-10 flex flex-col items-center gap-4">
                     <DatePicker onSubmit={onSubmit} language={language} />
+                    {actions}
                 </div>
             </motion.div>
         </div>

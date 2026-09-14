@@ -1,5 +1,5 @@
 import { createClient } from '@libsql/client/web';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 
 let client;
 function getDb() {
@@ -43,8 +43,18 @@ export function ensureUsersTable() {
     }
     await getDb().execute(CREATE_USERS);
     const cols = await getDb().execute('PRAGMA table_info(users)');
-    if (!cols.rows.some(r => r.name === 'name_en')) {
-      await getDb().execute('ALTER TABLE users ADD COLUMN name_en TEXT');
+    const newColumns = {
+      name_en: 'TEXT',
+      pin_hash: 'TEXT',
+      bio: 'TEXT',
+      photo: 'TEXT',
+      show_bio: 'INTEGER DEFAULT 1',
+      show_photo: 'INTEGER DEFAULT 1',
+    };
+    for (const [col, type] of Object.entries(newColumns)) {
+      if (!cols.rows.some(r => r.name === col)) {
+        await getDb().execute(`ALTER TABLE users ADD COLUMN ${col} ${type}`);
+      }
     }
     // The default countdown shown on the home page
     await getDb().execute({
@@ -63,23 +73,41 @@ function newSlug() {
   return randomBytes(4).toString('hex');
 }
 
-export async function addUser(name, nameEn, weddingDate) {
+// Stored as "salt:hash". A value without ":" is a plain PIN typed directly into the database.
+export function hashPin(pin) {
+  const salt = randomBytes(16).toString('hex');
+  return `${salt}:${scryptSync(pin, salt, 32).toString('hex')}`;
+}
+
+function verifyPin(pin, stored) {
+  if (!stored) return false;
+  const [salt, hash] = stored.includes(':') ? stored.split(':') : [null, null];
+  const expected = salt ? Buffer.from(hash, 'hex') : Buffer.from(stored);
+  const actual = salt ? scryptSync(pin, salt, 32) : Buffer.from(pin);
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
+}
+
+export async function addUser(name, nameEn, weddingDate, pin) {
   await ensureUsersTable();
   const slug = newSlug();
   await getDb().execute({
-    sql: 'INSERT INTO users (slug, name, name_en, wedding_date) VALUES (?, ?, ?, ?)',
-    args: [slug, name, nameEn || null, weddingDate],
+    sql: 'INSERT INTO users (slug, name, name_en, wedding_date, pin_hash) VALUES (?, ?, ?, ?, ?)',
+    args: [slug, name, nameEn || null, weddingDate, hashPin(pin)],
   });
   return getUser(slug);
 }
 
-const USER_COLUMNS = 'slug, name, name_en, wedding_date, created_at';
+// Public view: bio and photo only when the owner chose to show them
+const PUBLIC_COLUMNS = `slug, name, name_en, wedding_date, created_at,
+  CASE WHEN show_bio = 1 THEN bio END AS bio,
+  CASE WHEN show_photo = 1 THEN photo END AS photo`;
 
 export async function listUsers() {
   await ensureUsersTable();
-  // Default user first, then newest
+  // Default user first, then newest; photos are left out to keep the list small
   const { rows } = await getDb().execute(
-    `SELECT ${USER_COLUMNS} FROM users ORDER BY slug = '${DEFAULT_SLUG}' DESC, id DESC LIMIT 200`
+    `SELECT slug, name, name_en, wedding_date FROM users
+     ORDER BY slug = '${DEFAULT_SLUG}' DESC, id DESC LIMIT 200`
   );
   return rows;
 }
@@ -87,8 +115,37 @@ export async function listUsers() {
 export async function getUser(slug) {
   await ensureUsersTable();
   const { rows } = await getDb().execute({
-    sql: `SELECT ${USER_COLUMNS} FROM users WHERE slug = ?`,
+    sql: `SELECT ${PUBLIC_COLUMNS} FROM users WHERE slug = ?`,
     args: [slug],
   });
   return rows[0] ?? null;
+}
+
+export async function checkPin(slug, pin) {
+  await ensureUsersTable();
+  const { rows } = await getDb().execute({ sql: 'SELECT pin_hash FROM users WHERE slug = ?', args: [slug] });
+  const stored = rows[0]?.pin_hash;
+  if (!verifyPin(pin, stored)) return false;
+  if (!stored.includes(':')) {
+    await getDb().execute({ sql: 'UPDATE users SET pin_hash = ? WHERE slug = ?', args: [hashPin(pin), slug] });
+  }
+  return true;
+}
+
+export async function getProfile(slug) {
+  await ensureUsersTable();
+  const { rows } = await getDb().execute({
+    sql: `SELECT slug, name, name_en, wedding_date, bio, photo, show_bio, show_photo FROM users WHERE slug = ?`,
+    args: [slug],
+  });
+  return rows[0] ?? null;
+}
+
+export async function updateProfile(slug, { bio, photo, showBio, showPhoto }) {
+  await ensureUsersTable();
+  await getDb().execute({
+    sql: 'UPDATE users SET bio = ?, photo = ?, show_bio = ?, show_photo = ? WHERE slug = ?',
+    args: [bio || null, photo || null, showBio ? 1 : 0, showPhoto ? 1 : 0, slug],
+  });
+  return getProfile(slug);
 }

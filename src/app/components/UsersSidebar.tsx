@@ -1,43 +1,59 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, X, Heart } from 'lucide-react';
+import { Users, X, Heart, PanelLeftClose, PanelRightClose } from 'lucide-react';
 
 export interface WeddingUser {
     slug: string;
     name: string;
     name_en: string | null;
     wedding_date: string;
+    bio?: string | null;
+    photo?: string | null;
 }
 
 export function displayName(user: WeddingUser, language: string) {
     return language === 'en' && user.name_en ? user.name_en : user.name;
 }
 
+const DESKTOP_QUERY = '(min-width: 768px)';
+
 interface UsersSidebarProps {
     users: WeddingUser[];
     activeSlug: string;
     language: string;
+    // Drawer on phones
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
+    // Docked panel on medium and large screens
+    isDocked: boolean;
+    onDockedChange: (docked: boolean) => void;
     onSelect: (user: WeddingUser) => void;
 }
 
-export function UsersSidebar({ users, activeSlug, language, isOpen, onOpenChange, onSelect }: UsersSidebarProps) {
+export function UsersSidebar({
+    users, activeSlug, language, isOpen, onOpenChange, isDocked, onDockedChange, onSelect
+}: UsersSidebarProps) {
     const isRTL = language === 'ar';
     const title = isRTL ? 'العدّادات' : 'Countdowns';
-    const doneLabel = isRTL ? 'تم الزفاف' : 'Married';
-    const bodyFont = isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif';
+    const hideLabel = isRTL ? 'إخفاء' : 'Hide';
+    const titleFont = isRTL ? 'Amiri, serif' : 'Playfair Display, serif';
+    const HideIcon = isRTL ? PanelRightClose : PanelLeftClose;
 
-    const formatDate = (date: string) =>
-        new Date(date).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    const handleToggle = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (window.matchMedia(DESKTOP_QUERY).matches) onDockedChange(!isDocked);
+        else onOpenChange(true);
+    };
+
+    const list = (
+        <UsersList users={users} activeSlug={activeSlug} language={language} onSelect={onSelect} />
+    );
 
     return (
         <>
+            {/* Toggle button: hidden on desktop while the panel is open (the panel has its own) */}
             <motion.button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenChange(true);
-                }}
-                className="p-2 rounded-full bg-white/60 hover:bg-white text-[#D4AF37] shadow-sm transition-colors"
+                onClick={handleToggle}
+                className={`fixed top-4 md:top-6 start-4 md:start-6 z-[110] p-2 rounded-full bg-white/60 hover:bg-white text-[#D4AF37] shadow-sm transition-colors ${isDocked ? 'md:hidden' : ''}`}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 title={title}
@@ -45,11 +61,42 @@ export function UsersSidebar({ users, activeSlug, language, isOpen, onOpenChange
                 <Users className="w-6 h-6" />
             </motion.button>
 
+            {/* Docked panel (md and up) */}
+            <AnimatePresence>
+                {isDocked && (
+                    <motion.aside
+                        className="hidden md:flex fixed top-0 bottom-0 start-0 w-72 z-[105] bg-[#FBF9F4] border-e border-[#D4AF37]/30 shadow-lg flex-col cursor-default"
+                        dir={isRTL ? 'rtl' : 'ltr'}
+                        initial={{ x: isRTL ? '100%' : '-100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: isRTL ? '100%' : '-100%' }}
+                        transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between p-5 border-b border-[#D4AF37]/30">
+                            <h2 className="text-2xl text-[#2C2C2C] flex items-center gap-2" style={{ fontFamily: titleFont }}>
+                                <Users className="w-5 h-5 text-[#D4AF37]" />
+                                {title}
+                            </h2>
+                            <button
+                                onClick={() => onDockedChange(false)}
+                                className="text-[#8B7355] hover:text-[#2C2C2C] transition-colors"
+                                title={hideLabel}
+                            >
+                                <HideIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+                        {list}
+                    </motion.aside>
+                )}
+            </AnimatePresence>
+
+            {/* Drawer (phones) */}
             <AnimatePresence>
                 {isOpen && (
-                    <>
+                    <div className="md:hidden">
                         <motion.div
-                            className="fixed inset-0 bg-black/30 z-40"
+                            className="fixed inset-0 bg-black/30 z-[115]"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -59,7 +106,7 @@ export function UsersSidebar({ users, activeSlug, language, isOpen, onOpenChange
                             }}
                         />
                         <motion.aside
-                            className={`fixed top-0 bottom-0 ${isRTL ? 'right-0' : 'left-0'} w-80 max-w-[85vw] bg-[#FBF9F4] shadow-2xl z-50 flex flex-col cursor-default`}
+                            className="fixed top-0 bottom-0 start-0 w-80 max-w-[85vw] bg-[#FBF9F4] shadow-2xl z-[120] flex flex-col cursor-default"
                             dir={isRTL ? 'rtl' : 'ltr'}
                             initial={{ x: isRTL ? '100%' : '-100%' }}
                             animate={{ x: 0 }}
@@ -68,10 +115,7 @@ export function UsersSidebar({ users, activeSlug, language, isOpen, onOpenChange
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex items-center justify-between p-5 border-b border-[#D4AF37]/30">
-                                <h2
-                                    className="text-2xl text-[#2C2C2C]"
-                                    style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
-                                >
+                                <h2 className="text-2xl text-[#2C2C2C]" style={{ fontFamily: titleFont }}>
                                     {title}
                                 </h2>
                                 <button
@@ -81,36 +125,55 @@ export function UsersSidebar({ users, activeSlug, language, isOpen, onOpenChange
                                     <X className="w-6 h-6" />
                                 </button>
                             </div>
-
-                            <ul className="flex-1 overflow-y-auto p-3 space-y-2">
-                                {users.map(user => {
-                                    const active = user.slug === activeSlug;
-                                    const done = new Date(user.wedding_date).getTime() <= Date.now();
-                                    return (
-                                        <li key={user.slug}>
-                                            <button
-                                                onClick={() => onSelect(user)}
-                                                className={`w-full text-start px-4 py-3 rounded-xl border-2 transition-all ${active
-                                                    ? 'border-[#D4AF37] bg-[#F5E9C8]'
-                                                    : 'border-transparent hover:bg-[#F5F3EE]'}`}
-                                            >
-                                                <div className="flex items-center gap-2 text-[#2C2C2C]" style={{ fontFamily: bodyFont }}>
-                                                    {active && <Heart className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37] shrink-0" />}
-                                                    <span className="truncate font-medium">{displayName(user, language)}</span>
-                                                </div>
-                                                <div className="mt-1 text-sm text-[#8B7355]" style={{ fontFamily: bodyFont }}>
-                                                    {formatDate(user.wedding_date)}
-                                                    {done && <span className="ms-2 text-[#D4AF37]">· {doneLabel}</span>}
-                                                </div>
-                                            </button>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
+                            {list}
                         </motion.aside>
-                    </>
+                    </div>
                 )}
             </AnimatePresence>
         </>
+    );
+}
+
+interface UsersListProps {
+    users: WeddingUser[];
+    activeSlug: string;
+    language: string;
+    onSelect: (user: WeddingUser) => void;
+}
+
+function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
+    const isRTL = language === 'ar';
+    const doneLabel = isRTL ? 'تم الزفاف' : 'Married';
+    const bodyFont = isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif';
+
+    const formatDate = (date: string) =>
+        new Date(date).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+    return (
+        <ul className="flex-1 overflow-y-auto p-3 space-y-2">
+            {users.map(user => {
+                const active = user.slug === activeSlug;
+                const done = new Date(user.wedding_date).getTime() <= Date.now();
+                return (
+                    <li key={user.slug}>
+                        <button
+                            onClick={() => onSelect(user)}
+                            className={`w-full text-start px-4 py-3 rounded-xl border-2 transition-all ${active
+                                ? 'border-[#D4AF37] bg-[#F5E9C8]'
+                                : 'border-transparent hover:bg-[#F5F3EE]'}`}
+                        >
+                            <div className="flex items-center gap-2 text-[#2C2C2C]" style={{ fontFamily: bodyFont }}>
+                                {active && <Heart className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37] shrink-0" />}
+                                <span className="truncate font-medium">{displayName(user, language)}</span>
+                            </div>
+                            <div className="mt-1 text-sm text-[#8B7355]" style={{ fontFamily: bodyFont }}>
+                                {formatDate(user.wedding_date)}
+                                {done && <span className="ms-2 text-[#D4AF37]">· {doneLabel}</span>}
+                            </div>
+                        </button>
+                    </li>
+                );
+            })}
+        </ul>
     );
 }

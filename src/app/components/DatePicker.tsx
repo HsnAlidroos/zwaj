@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface DatePickerProps {
     // Receives the chosen date and names; may throw to show an error
-    onSubmit: (date: string, nameAr: string, nameEn: string) => void | Promise<void>;
+    onSubmit: (date: string, nameAr: string, nameEn: string, pin: string) => void | Promise<void>;
     language: string;
 }
 
@@ -13,12 +13,17 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
     const [selectedDate, setSelectedDate] = useState('');
     const [nameAr, setNameAr] = useState('');
     const [nameEn, setNameEn] = useState('');
+    const [pin, setPin] = useState('');
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedDate || !nameAr.trim() || !nameEn.trim()) return;
+        if (pin.length < 4) {
+            setError(currentText.pinError);
+            return;
+        }
         if (new Date(selectedDate).getTime() <= Date.now()) {
             setError(currentText.pastError);
             return;
@@ -26,7 +31,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
         setError('');
         setSaving(true);
         try {
-            await onSubmit(selectedDate, nameAr.trim(), nameEn.trim());
+            await onSubmit(selectedDate, nameAr.trim(), nameEn.trim(), pin);
             setIsOpen(false);
         } catch {
             setError(currentText.saveError);
@@ -47,6 +52,9 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             nameArPlaceholder: 'مثال: أحمد وسارة',
             nameEnLabel: 'English Name',
             nameEnPlaceholder: 'e.g. Ahmed & Sara',
+            pinLabel: 'Secret Code',
+            pinHint: 'You will use it to open your profile later',
+            pinError: 'The code must be at least 4 characters',
             saving: 'Saving...',
             saveError: 'Could not save, please try again',
             label: 'Wedding Date',
@@ -61,6 +69,9 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             nameArPlaceholder: 'مثال: أحمد وسارة',
             nameEnLabel: 'الاسم بالإنجليزي',
             nameEnPlaceholder: 'e.g. Ahmed & Sara',
+            pinLabel: 'الرمز السري',
+            pinHint: 'تستخدمه لاحقاً للدخول لملفك الشخصي',
+            pinError: 'الرمز لازم يكون 4 أحرف على الأقل',
             saving: 'جارٍ الحفظ...',
             saveError: 'تعذّر الحفظ، حاول مرة أخرى',
             label: 'تاريخ الزفاف',
@@ -107,7 +118,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                             transition={{ type: 'spring', damping: 25 }}
                         >
                             <div
-                                className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full"
+                                className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto"
                                 dir={isRTL ? 'rtl' : 'ltr'}
                             >
                                 <div className="flex justify-between items-center mb-6">
@@ -149,6 +160,29 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                             />
                                         </div>
                                     ))}
+
+                                    <div className="mb-4">
+                                        <label
+                                            className="block mb-2 text-[#2C2C2C]"
+                                            style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+                                        >
+                                            {currentText.pinLabel}
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={pin}
+                                            minLength={4}
+                                            maxLength={64}
+                                            autoComplete="new-password"
+                                            onChange={(e) => {
+                                                setPin(e.target.value);
+                                                setError('');
+                                            }}
+                                            className="w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]"
+                                            required
+                                        />
+                                        <p className="mt-1 text-xs text-[#8B7355]">{currentText.pinHint}</p>
+                                    </div>
 
                                     <div className="mb-6">
                                         <label

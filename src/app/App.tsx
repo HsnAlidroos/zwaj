@@ -5,6 +5,7 @@ import { DatePicker } from '@/app/components/DatePicker';
 import { ShareButton } from '@/app/components/ShareButton';
 import { Celebration } from '@/app/components/Celebration';
 import { UsersSidebar, displayName, type WeddingUser } from '@/app/components/UsersSidebar';
+import { ProfileDialog, saveToken } from '@/app/components/ProfileDialog';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Maximize2, Minimize2 } from 'lucide-react';
 
@@ -32,12 +33,39 @@ export default function App() {
   const [users, setUsers] = useState<WeddingUser[]>([]);
   const [activeUser, setActiveUser] = useState<WeddingUser | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarDocked, setIsSidebarDocked] = useState(() => {
+    try {
+      return localStorage.getItem('zwaj-sidebar-docked') !== '0';
+    } catch {
+      return true;
+    }
+  });
+
+  const handleDockedChange = (docked: boolean) => {
+    setIsSidebarDocked(docked);
+    try {
+      localStorage.setItem('zwaj-sidebar-docked', docked ? '1' : '0');
+    } catch {
+      // Ignore: preference just won't be remembered
+    }
+  };
   const handleComplete = useCallback(() => setIsDone(true), []);
+
+  // Fetches the public bio/photo, which the list leaves out
+  const loadUserDetails = (slug: string) => {
+    fetch(`/api/users?slug=${encodeURIComponent(slug)}`)
+      .then(res => (res.ok ? res.json() : null))
+      .then((details: WeddingUser | null) => {
+        if (details) setActiveUser(current => (current?.slug === slug ? { ...current, ...details } : current));
+      })
+      .catch(() => {});
+  };
 
   const applyUser = (user: WeddingUser) => {
     setActiveUser(user);
     setWeddingDate(user.wedding_date);
     setIsDone(new Date(user.wedding_date).getTime() <= Date.now());
+    loadUserDetails(user.slug);
   };
 
   // Each user has their own page at /<slug>; the home page shows the default user
@@ -69,14 +97,15 @@ export default function App() {
     setIsSidebarOpen(false);
   };
 
-  const handleCreate = async (date: string, name: string, nameEn: string) => {
+  const handleCreate = async (date: string, name: string, nameEn: string, pin: string) => {
     const res = await fetch('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, nameEn, weddingDate: date })
+      body: JSON.stringify({ name, nameEn, pin, weddingDate: date })
     });
     if (!res.ok) throw new Error('Failed to save');
-    const user: WeddingUser = await res.json();
+    const { user, token }: { user: WeddingUser; token: string } = await res.json();
+    saveToken(user.slug, token);
     window.history.pushState(null, '', `/${user.slug}`);
     setUsers(prev => [prev[0], user, ...prev.slice(1)].filter(Boolean));
     applyUser(user);
@@ -156,32 +185,62 @@ export default function App() {
       language={language}
       isOpen={isSidebarOpen}
       onOpenChange={setIsSidebarOpen}
+      isDocked={isSidebarDocked}
+      onDockedChange={handleDockedChange}
       onSelect={handleSelectUser}
     />
   );
 
-  const sidebarCorner = (
-    <div className={`fixed top-4 md:top-6 ${isRTL ? 'right-4 md:right-6' : 'left-4 md:left-6'} z-[110]`}>
-      {sidebar}
+  // Leaves room for the docked sidebar on medium and large screens
+  const dockOffset = isSidebarDocked ? 'md:ps-72' : '';
+
+  const profileButton = activeUser && (
+    <ProfileDialog slug={activeUser.slug} language={language} onSaved={() => loadUserDetails(activeUser.slug)} />
+  );
+
+  const profileDetails = activeUser && (activeUser.photo || activeUser.bio) && (
+    <div className="mt-6 flex flex-col items-center gap-4">
+      {activeUser.photo && (
+        <img
+          src={activeUser.photo}
+          alt={ownerName}
+          className="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover border-4 border-[#D4AF37] shadow-lg"
+        />
+      )}
+      {activeUser.bio && (
+        <p
+          className="max-w-xl text-base md:text-lg text-[#5C4A32] whitespace-pre-line leading-relaxed"
+          style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+        >
+          {activeUser.bio}
+        </p>
+      )}
     </div>
   );
 
   if (isDone) {
     return (
       <>
-        <Celebration language={language} name={ownerName} onSubmit={handleCreate} />
-        {sidebarCorner}
+        <Celebration
+          language={language}
+          name={ownerName}
+          details={profileDetails}
+          actions={profileButton}
+          className={isSidebarDocked ? 'md:start-72' : ''}
+          onSubmit={handleCreate}
+        />
+        {sidebar}
       </>
     );
   }
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-[#F5F3EE] via-[#FBF9F4] to-[#F0EDE5] flex flex-col relative overflow-hidden cursor-pointer select-none"
+      className={`min-h-screen bg-gradient-to-br from-[#F5F3EE] via-[#FBF9F4] to-[#F0EDE5] flex flex-col relative overflow-hidden cursor-pointer select-none transition-[padding] duration-300 ${isFullScreen ? '' : dockOffset}`}
       dir={isRTL ? 'rtl' : 'ltr'}
       onClick={handleClick}
     >
-      {!isFullScreen && sidebarCorner}
+      {!isFullScreen && sidebar}
 
       {/* Celebrations overlay */}
       {celebrations.map(celebration => {
@@ -232,7 +291,7 @@ export default function App() {
           >
             <div className="max-w-7xl mx-auto flex justify-between items-center">
               <motion.div
-                className="flex items-center gap-2 ps-14"
+                className={`flex items-center gap-2 ps-14 ${isSidebarDocked ? 'md:ps-0' : ''}`}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
@@ -297,6 +356,7 @@ export default function App() {
                 {ownerName}
               </p>
             )}
+            {profileDetails}
           </motion.div>
 
           {/* Countdown Timer */}
@@ -337,6 +397,8 @@ export default function App() {
               >
                 <DatePicker onSubmit={handleCreate} language={language} />
               </motion.div>
+
+              {profileButton}
 
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
