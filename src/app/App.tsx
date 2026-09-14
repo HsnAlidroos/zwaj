@@ -69,11 +69,11 @@ export default function App() {
     setIsSidebarOpen(false);
   };
 
-  const handleCreate = async (date: string, name: string) => {
+  const handleCreate = async (date: string, name: string, nameEn: string) => {
     const res = await fetch('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, weddingDate: date })
+      body: JSON.stringify({ name, nameEn, weddingDate: date })
     });
     if (!res.ok) throw new Error('Failed to save');
     const user: WeddingUser = await res.json();

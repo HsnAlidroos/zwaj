@@ -63,12 +63,12 @@ function newSlug() {
   return randomBytes(4).toString('hex');
 }
 
-export async function addUser(name, weddingDate) {
+export async function addUser(name, nameEn, weddingDate) {
   await ensureUsersTable();
   const slug = newSlug();
   await getDb().execute({
-    sql: 'INSERT INTO users (slug, name, wedding_date) VALUES (?, ?, ?)',
-    args: [slug, name, weddingDate],
+    sql: 'INSERT INTO users (slug, name, name_en, wedding_date) VALUES (?, ?, ?, ?)',
+    args: [slug, name, nameEn || null, weddingDate],
   });
   return getUser(slug);
 }

@@ -10,11 +10,12 @@ export default async function handler(req, res) {
     }
     if (req.method === 'POST') {
       const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+      const nameEn = typeof req.body?.nameEn === 'string' ? req.body.nameEn.trim().slice(0, 100) : '';
       const weddingDate = typeof req.body?.weddingDate === 'string' ? req.body.weddingDate : '';
       const time = new Date(weddingDate).getTime();
       if (!name || name.length > 100) return res.status(400).json({ error: 'name is required' });
       if (Number.isNaN(time) || time <= Date.now()) return res.status(400).json({ error: 'date must be in the future' });
-      return res.status(201).json(await addUser(name, weddingDate));
+      return res.status(201).json(await addUser(name, nameEn, weddingDate));
     }
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Method not allowed' });

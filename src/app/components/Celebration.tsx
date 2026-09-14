@@ -5,7 +5,7 @@ import { DatePicker } from '@/app/components/DatePicker';
 interface CelebrationProps {
     language: string;
     name?: string;
-    onSubmit: (date: string, name: string) => void | Promise<void>;
+    onSubmit: (date: string, nameAr: string, nameEn: string) => void | Promise<void>;
 }
 
 const floaters = ['🎈', '💖', '🎉', '💕', '✨', '💍', '🌸', '💗'];

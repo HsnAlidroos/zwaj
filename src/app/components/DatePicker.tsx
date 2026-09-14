@@ -3,21 +3,22 @@ import { Calendar, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface DatePickerProps {
-    // Receives the chosen date and name; may throw to show an error
-    onSubmit: (date: string, name: string) => void | Promise<void>;
+    // Receives the chosen date and names; may throw to show an error
+    onSubmit: (date: string, nameAr: string, nameEn: string) => void | Promise<void>;
     language: string;
 }
 
 export function DatePicker({ onSubmit, language }: DatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
-    const [name, setName] = useState('');
+    const [nameAr, setNameAr] = useState('');
+    const [nameEn, setNameEn] = useState('');
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedDate || !name.trim()) return;
+        if (!selectedDate || !nameAr.trim() || !nameEn.trim()) return;
         if (new Date(selectedDate).getTime() <= Date.now()) {
             setError(currentText.pastError);
             return;
@@ -25,7 +26,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
         setError('');
         setSaving(true);
         try {
-            await onSubmit(selectedDate, name.trim());
+            await onSubmit(selectedDate, nameAr.trim(), nameEn.trim());
             setIsOpen(false);
         } catch {
             setError(currentText.saveError);
@@ -42,8 +43,10 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
         en: {
             button: 'Create Your Countdown',
             title: 'Create Your Countdown',
-            nameLabel: 'Your Names',
-            namePlaceholder: 'e.g. Ahmed & Sara',
+            nameArLabel: 'Arabic Name',
+            nameArPlaceholder: 'مثال: أحمد وسارة',
+            nameEnLabel: 'English Name',
+            nameEnPlaceholder: 'e.g. Ahmed & Sara',
             saving: 'Saving...',
             saveError: 'Could not save, please try again',
             label: 'Wedding Date',
@@ -54,8 +57,10 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
         ar: {
             button: 'أنشئ عدّادك',
             title: 'أنشئ عدّاد زفافك',
-            nameLabel: 'الاسم',
-            namePlaceholder: 'مثال: أحمد وسارة',
+            nameArLabel: 'الاسم بالعربي',
+            nameArPlaceholder: 'مثال: أحمد وسارة',
+            nameEnLabel: 'الاسم بالإنجليزي',
+            nameEnPlaceholder: 'e.g. Ahmed & Sara',
             saving: 'جارٍ الحفظ...',
             saveError: 'تعذّر الحفظ، حاول مرة أخرى',
             label: 'تاريخ الزفاف',
@@ -121,23 +126,29 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                 </div>
 
                                 <form onSubmit={handleSubmit}>
-                                    <div className="mb-4">
-                                        <label
-                                            className="block mb-2 text-[#2C2C2C]"
-                                            style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
-                                        >
-                                            {currentText.nameLabel}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={name}
-                                            maxLength={100}
-                                            placeholder={currentText.namePlaceholder}
-                                            onChange={(e) => setName(e.target.value)}
-                                            className="w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]"
-                                            required
-                                        />
-                                    </div>
+                                    {[
+                                        { label: currentText.nameArLabel, placeholder: currentText.nameArPlaceholder, value: nameAr, set: setNameAr, dir: 'rtl' },
+                                        { label: currentText.nameEnLabel, placeholder: currentText.nameEnPlaceholder, value: nameEn, set: setNameEn, dir: 'ltr' }
+                                    ].map(field => (
+                                        <div className="mb-4" key={field.dir}>
+                                            <label
+                                                className="block mb-2 text-[#2C2C2C]"
+                                                style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+                                            >
+                                                {field.label}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                dir={field.dir}
+                                                value={field.value}
+                                                maxLength={100}
+                                                placeholder={field.placeholder}
+                                                onChange={(e) => field.set(e.target.value)}
+                                                className="w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]"
+                                                required
+                                            />
+                                        </div>
+                                    ))}
 
                                     <div className="mb-6">
                                         <label
