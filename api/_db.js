@@ -109,7 +109,7 @@ export async function listUsers() {
   // Default user first, then newest; photos are left out to keep the list small
   const { rows } = await getDb().execute(
     `SELECT slug, name, name_en, wedding_date,
-      CASE WHEN show_photo = 1 THEN photo_thumb END AS photo_thumb FROM users
+      CASE WHEN show_photo = 1 THEN COALESCE(photo_thumb, photo) END AS photo_thumb FROM users
      ORDER BY slug = '${DEFAULT_SLUG}' DESC, id DESC LIMIT 200`
   );
   return rows;
