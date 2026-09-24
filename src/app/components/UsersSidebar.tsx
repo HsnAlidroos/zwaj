@@ -1,5 +1,6 @@
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Users, X, Heart, PanelLeftClose, PanelRightClose } from 'lucide-react';
+import { Users, X, Heart, PanelLeftClose, PanelRightClose, Search } from 'lucide-react';
 
 export interface WeddingUser {
     slug: string;
@@ -17,6 +18,16 @@ export function displayName(user: WeddingUser, language: string) {
 }
 
 const DESKTOP_QUERY = '(min-width: 768px)';
+
+function normalize(value: string) {
+    return value
+        .toLowerCase()
+        .replace(/[\u064B-\u0652\u0640]/g, '')
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ى/g, 'ي')
+        .replace(/ة/g, 'ه')
+        .trim();
+}
 
 interface UsersSidebarProps {
     users: WeddingUser[];
@@ -37,6 +48,8 @@ export function UsersSidebar({
 }: UsersSidebarProps) {
     const isRTL = language === 'ar';
     const title = isRTL ? 'المناسبات' : 'Countdowns';
+    const searchPlaceholder = isRTL ? 'ابحث عن اسم...' : 'Search by name...';
+    const noResults = isRTL ? 'لا توجد نتائج' : 'No results';
     const hideLabel = isRTL ? 'إخفاء' : 'Hide';
     const titleFont = isRTL ? 'Amiri, serif' : 'Playfair Display, serif';
     const HideIcon = isRTL ? PanelRightClose : PanelLeftClose;
@@ -47,9 +60,49 @@ export function UsersSidebar({
         else onOpenChange(true);
     };
 
-    const list = isLoading
-        ? <UsersListSkeleton />
-        : <UsersList users={users} activeSlug={activeSlug} language={language} onSelect={onSelect} />;
+    const [query, setQuery] = useState('');
+
+    const filtered = useMemo(() => {
+        const needle = normalize(query);
+        if (!needle) return users;
+        return users.filter(user =>
+            normalize(`${user.name} ${user.name_en ?? ''}`).includes(needle)
+        );
+    }, [users, query]);
+
+    const search = (
+        <div className="px-3 pt-3">
+            <div className="relative">
+                <Search className="absolute inset-y-0 start-3 my-auto w-4 h-4 text-[#8B7355] pointer-events-none" />
+                <input
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={searchPlaceholder}
+                    className="w-full ps-9 pe-3 py-2 rounded-lg border-2 border-[#D4AF37]/50 bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37] text-sm"
+                    style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+                />
+            </div>
+        </div>
+    );
+
+    const list = isLoading ? (
+        <UsersListSkeleton />
+    ) : (
+        <>
+            {search}
+            {filtered.length ? (
+                <UsersList users={filtered} activeSlug={activeSlug} language={language} onSelect={onSelect} />
+            ) : (
+                <p
+                    className="flex-1 p-6 text-center text-sm text-[#8B7355]"
+                    style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+                >
+                    {noResults}
+                </p>
+            )}
+        </>
+    );
 
     return (
         <>
