@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserRound, X, ImagePlus, Trash2, LogOut, Pencil, AlertTriangle } from 'lucide-react';
 import { displayName, type WeddingUser } from '@/app/components/UsersSidebar';
+import { PasswordInput } from '@/app/components/PasswordInput';
 
 export const tokenKey = (slug: string) => `zwaj-token-${slug}`;
 
@@ -376,13 +377,12 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                 ) : !token ? (
                                     <form onSubmit={handleLogin}>
                                         <label className="block mb-2 text-[#2C2C2C]">{t.pinLabel}</label>
-                                        <input
-                                            type="password"
+                                        <PasswordInput
                                             value={pin}
                                             autoFocus
                                             autoComplete="current-password"
-                                            onChange={(e) => {
-                                                setPin(e.target.value);
+                                            onChange={(value) => {
+                                                setPin(value);
                                                 setError('');
                                             }}
                                             className={inputClass}
@@ -511,11 +511,10 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                             {t.deleteWarning}
                                                         </p>
                                                         <label className="block text-sm text-[#2C2C2C]">{t.deletePinLabel}</label>
-                                                        <input
-                                                            type="password"
+                                                        <PasswordInput
                                                             value={deletePin}
                                                             autoComplete="current-password"
-                                                            onChange={(e) => setDeletePin(e.target.value)}
+                                                            onChange={setDeletePin}
                                                             className="w-full px-4 py-2 border-2 border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 bg-white"
                                                             required
                                                         />

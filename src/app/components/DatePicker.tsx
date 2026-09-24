@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Calendar, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { PasswordInput } from '@/app/components/PasswordInput';
 
 interface DatePickerProps {
     // Receives the chosen date and names; may throw to show an error
@@ -168,14 +169,13 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                         >
                                             {currentText.pinLabel}
                                         </label>
-                                        <input
-                                            type="password"
+                                        <PasswordInput
                                             value={pin}
                                             minLength={4}
                                             maxLength={64}
                                             autoComplete="new-password"
-                                            onChange={(e) => {
-                                                setPin(e.target.value);
+                                            onChange={(value) => {
+                                                setPin(value);
                                                 setError('');
                                             }}
                                             className="w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]"
