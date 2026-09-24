@@ -4,6 +4,7 @@ import { Users, X, Heart, PanelLeftClose, PanelRightClose, Search } from 'lucide
 
 export interface WeddingUser {
     gender?: string | null;
+    show_role?: number;
     slug: string;
     name: string;
     name_en: string | null;
@@ -225,46 +226,72 @@ function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
     const formatDate = (date: string) =>
         new Date(date).toLocaleDateString(isRTL ? 'ar-u-ca-gregory-nu-latn' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
-    return (
-        <ul className="flex-1 overflow-y-auto p-3 space-y-2">
-            {users.map(user => {
-                const active = user.slug === activeSlug;
-                const done = new Date(user.wedding_date).getTime() <= Date.now();
-                return (
-                    <li key={user.slug}>
-                        <button
-                            onClick={() => onSelect(user)}
-                            className={`w-full text-start px-4 py-3 rounded-xl border-2 transition-all ${active
-                                ? 'border-gold bg-champagne'
-                                : 'border-transparent hover:bg-cream'}`}
-                        >
-                            <div className="flex items-center gap-3">
-                                {user.photo_thumb ? (
-                                    <img
-                                        src={user.photo_thumb}
-                                        alt=""
-                                        className="w-10 h-10 rounded-full object-cover border border-gold shrink-0"
-                                    />
-                                ) : (
-                                    <div className="w-10 h-10 rounded-full bg-champagne border border-gold/50 flex items-center justify-center shrink-0">
-                                        <span aria-hidden="true" className="text-lg">{user.gender === 'female' ? '👰' : '🤵'}</span>
-                                    </div>
-                                )}
-                                <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2 text-ink" style={{ fontFamily: bodyFont }}>
-                                        {active && <Heart className="w-3 h-3 text-gold fill-gold shrink-0" />}
-                                        <span className="truncate font-medium">{displayName(user, language)}</span>
-                                    </div>
-                                    <div className="mt-1 text-sm text-taupe" style={{ fontFamily: bodyFont }}>
-                                        {formatDate(user.wedding_date)}
-                                        {done && <span className="ms-2 text-gold">· {doneLabel}</span>}
-                                    </div>
-                                </div>
+    const groomsLabel = isRTL ? 'العرسان' : 'Grooms';
+    const bridesLabel = isRTL ? 'العرائس' : 'Brides';
+
+    const grooms = users.filter(user => user.gender !== 'female');
+    const brides = users.filter(user => user.gender === 'female');
+
+    const row = (user: WeddingUser) => {
+        const active = user.slug === activeSlug;
+        const done = new Date(user.wedding_date).getTime() <= Date.now();
+        return (
+            <li key={user.slug}>
+                <button
+                    onClick={() => onSelect(user)}
+                    className={`w-full text-start px-4 py-3 rounded-xl border-2 transition-all ${active
+                        ? 'border-gold bg-champagne'
+                        : 'border-transparent hover:bg-cream'}`}
+                >
+                    <div className="flex items-center gap-3">
+                        {user.photo_thumb ? (
+                            <img
+                                src={user.photo_thumb}
+                                alt=""
+                                className="w-10 h-10 rounded-full object-cover border border-gold shrink-0"
+                            />
+                        ) : (
+                            <div className="w-10 h-10 rounded-full bg-champagne border border-gold/50 flex items-center justify-center shrink-0">
+                                <span aria-hidden="true" className="text-lg">{user.gender === 'female' ? '👰' : '🤵'}</span>
                             </div>
-                        </button>
-                    </li>
-                );
-            })}
+                        )}
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 text-ink" style={{ fontFamily: bodyFont }}>
+                                {active && <Heart className="w-3 h-3 text-gold fill-gold shrink-0" />}
+                                <span className="truncate font-medium">{displayName(user, language)}</span>
+                            </div>
+                            <div className="mt-1 text-sm text-taupe" style={{ fontFamily: bodyFont }}>
+                                {formatDate(user.wedding_date)}
+                                {done && <span className="ms-2 text-gold">· {doneLabel}</span>}
+                            </div>
+                        </div>
+                    </div>
+                </button>
+            </li>
+        );
+    };
+
+    // Grooms and brides are listed under separate headings
+    const group = (label: string, icon: string, members: WeddingUser[]) =>
+        members.length > 0 && (
+            <li>
+                <p
+                    className="px-2 pb-2 pt-1 text-xs font-semibold tracking-wide text-taupe flex items-center gap-2"
+                    style={{ fontFamily: bodyFont }}
+                >
+                    <span aria-hidden="true">{icon}</span>
+                    {label}
+                    <span className="text-gold">({members.length})</span>
+                    <span className="flex-1 h-px bg-gold/30" />
+                </p>
+                <ul className="space-y-2">{members.map(row)}</ul>
+            </li>
+        );
+
+    return (
+        <ul className="flex-1 overflow-y-auto p-3 space-y-4">
+            {group(groomsLabel, '🤵', grooms)}
+            {group(bridesLabel, '👰', brides)}
         </ul>
     );
 }

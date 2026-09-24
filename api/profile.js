@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       return res.status(200).json(await getProfile(slug));
     }
     if (req.method === 'PATCH') {
-      const { bio, photo, photoThumb, showBio, showPhoto, theme } = req.body || {};
+      const { bio, photo, photoThumb, showBio, showPhoto, showRole, theme } = req.body || {};
       if (bio != null && (typeof bio !== 'string' || bio.length > MAX_BIO)) {
         return res.status(400).json({ error: 'bio is too long' });
       }
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       if (theme != null && !THEMES.includes(theme)) {
         return res.status(400).json({ error: 'invalid theme' });
       }
-      return res.status(200).json(await updateProfile(slug, { bio, photo, photoThumb, showBio: !!showBio, showPhoto: !!showPhoto, theme }));
+      return res.status(200).json(await updateProfile(slug, { bio, photo, photoThumb, showBio: !!showBio, showPhoto: !!showPhoto, showRole: !!showRole, theme }));
     }
     if (req.method === 'DELETE') {
       // The default countdown is recreated automatically, so it can't be deleted

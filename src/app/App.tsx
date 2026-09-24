@@ -216,7 +216,7 @@ export default function App() {
   const ownerName = activeUser ? displayName(activeUser, language) : '';
   // The page speaks about a groom or a bride once a countdown is open
   const ownerSubtitle = activeUser ? forGender('subtitle', activeUser.gender, language) : currentText.subtitle;
-  const ownerRole = activeUser ? forGender('role', activeUser.gender, language) : '';
+  const ownerRole = activeUser && activeUser.show_role !== 0 ? forGender('role', activeUser.gender, language) : '';
 
   const sidebar = (
     <UsersSidebar

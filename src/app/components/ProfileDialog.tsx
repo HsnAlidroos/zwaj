@@ -33,6 +33,7 @@ interface Profile {
     photo: string | null;
     photo_thumb: string | null;
     show_bio: number;
+    show_role: number;
     show_photo: number;
     theme: string | null;
 }
@@ -92,6 +93,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
             changePhoto: 'Change photo',
             removePhoto: 'Remove',
             showBio: 'Show description',
+            showRole: 'Show groom/bride label',
             showPhoto: 'Show photo',
             theme: 'Site colors',
             save: 'Save',
@@ -122,6 +124,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
             changePhoto: 'تغيير الصورة',
             removePhoto: 'حذف الصورة',
             showBio: 'إظهار النبذة',
+            showRole: 'إظهار (عريس/عروس)',
             showPhoto: 'إظهار الصورة',
             theme: 'ألوان الصفحة',
             save: 'حفظ',
@@ -212,6 +215,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                     photo: profile.photo,
                     photoThumb: profile.photo_thumb,
                     showBio: !!profile.show_bio,
+                    showRole: !!profile.show_role,
                     showPhoto: !!profile.show_photo,
                     theme: profile.theme || DEFAULT_THEME
                 })
@@ -491,6 +495,18 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
 
                                         </>
                                         )}
+
+                                        {/* Groom / bride label */}
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-ink">
+                                                {forGender('role', user.gender, language)}
+                                            </span>
+                                            <Toggle
+                                                label={t.showRole}
+                                                checked={!!profile.show_role}
+                                                onChange={(v) => update({ show_role: v ? 1 : 0 })}
+                                            />
+                                        </div>
 
                                         {error && <p className="text-sm text-red-600">{error}</p>}
 

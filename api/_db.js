@@ -58,6 +58,7 @@ export function ensureUsersTable() {
       photo_thumb: 'TEXT',
       theme: 'TEXT',
       gender: "TEXT DEFAULT 'male'",
+      show_role: 'INTEGER DEFAULT 1',
     };
     for (const [col, type] of Object.entries(newColumns)) {
       if (!cols.rows.some(r => r.name === col)) {
@@ -108,7 +109,7 @@ export async function addUser(name, nameEn, weddingDate, pin, theme, gender) {
 }
 
 // Public view: bio and photo only when the owner chose to show them
-const PUBLIC_COLUMNS = `slug, name, name_en, wedding_date, created_at, theme, gender,
+const PUBLIC_COLUMNS = `slug, name, name_en, wedding_date, created_at, theme, gender, show_role,
   CASE WHEN show_bio = 1 THEN bio END AS bio,
   CASE WHEN show_photo = 1 THEN photo END AS photo,
   CASE WHEN show_photo = 1 THEN photo_thumb END AS photo_thumb`;
@@ -117,7 +118,7 @@ export async function listUsers() {
   await ensureUsersTable();
   // Default user first, then newest; photos are left out to keep the list small
   const { rows } = await getDb().execute(
-    `SELECT slug, name, name_en, wedding_date, theme, gender,
+    `SELECT slug, name, name_en, wedding_date, theme, gender, show_role,
       CASE WHEN show_photo = 1 THEN COALESCE(photo_thumb, photo) END AS photo_thumb FROM users
      ORDER BY slug = '${DEFAULT_SLUG}' DESC, id DESC LIMIT 200`
   );
@@ -152,17 +153,17 @@ export async function deleteUser(slug) {
 export async function getProfile(slug) {
   await ensureUsersTable();
   const { rows } = await getDb().execute({
-    sql: `SELECT slug, name, name_en, wedding_date, bio, photo, photo_thumb, show_bio, show_photo, theme, gender FROM users WHERE slug = ?`,
+    sql: `SELECT slug, name, name_en, wedding_date, bio, photo, photo_thumb, show_bio, show_photo, show_role, theme, gender FROM users WHERE slug = ?`,
     args: [slug],
   });
   return rows[0] ?? null;
 }
 
-export async function updateProfile(slug, { bio, photo, photoThumb, showBio, showPhoto, theme }) {
+export async function updateProfile(slug, { bio, photo, photoThumb, showBio, showPhoto, showRole, theme }) {
   await ensureUsersTable();
   await getDb().execute({
-    sql: 'UPDATE users SET bio = ?, photo = ?, photo_thumb = ?, show_bio = ?, show_photo = ?, theme = ? WHERE slug = ?',
-    args: [bio || null, photo || null, photoThumb || null, showBio ? 1 : 0, showPhoto ? 1 : 0, theme || null, slug],
+    sql: 'UPDATE users SET bio = ?, photo = ?, photo_thumb = ?, show_bio = ?, show_photo = ?, show_role = ?, theme = ? WHERE slug = ?',
+    args: [bio || null, photo || null, photoThumb || null, showBio ? 1 : 0, showPhoto ? 1 : 0, showRole ? 1 : 0, theme || null, slug],
   });
   return getProfile(slug);
 }
