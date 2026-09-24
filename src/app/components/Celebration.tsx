@@ -1,10 +1,12 @@
 import { useMemo, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { DatePicker } from '@/app/components/DatePicker';
+import { forGender } from '@/app/components/gender';
 
 interface CelebrationProps {
     language: string;
     name?: string;
+    gender?: string | null;
     details?: ReactNode;
     actions?: ReactNode;
     className?: string;
@@ -14,7 +16,7 @@ interface CelebrationProps {
 const floaters = ['🎈', '💖', '🎉', '💕', '✨', '💍', '🌸', '💗'];
 const confettiColors = ['var(--c-gold)', 'var(--c-gold-soft)', 'var(--c-gold-hover)', 'var(--c-gold-light)', 'var(--c-blush)', '#FFFFFF'];
 
-export function Celebration({ language, name, details, actions, className = '', onSubmit }: CelebrationProps) {
+export function Celebration({ language, name, gender, details, actions, className = '', onSubmit }: CelebrationProps) {
     const isRTL = language === 'ar';
 
     const text = {
@@ -29,7 +31,13 @@ export function Celebration({ language, name, details, actions, className = '', 
             sub: 'حلّ اليوم الموعود'
         }
     };
-    const t = text[language as keyof typeof text] || text.en;
+    const base = text[language as keyof typeof text] || text.en;
+    // A groom's page and a bride's page are worded differently
+    const t = {
+        ...base,
+        title: forGender('congrats', gender, language),
+        dua: forGender('dua', gender, language)
+    };
 
     const confetti = useMemo(
         () => Array.from({ length: 60 }, (_, i) => ({

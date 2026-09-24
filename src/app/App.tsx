@@ -8,6 +8,7 @@ import { UsersSidebar, displayName, type WeddingUser } from '@/app/components/Us
 import { ProfileDialog, saveToken } from '@/app/components/ProfileDialog';
 import { PhotoPreview } from '@/app/components/PhotoPreview';
 import { Spinner, CountdownSkeleton } from '@/app/components/Spinner';
+import { forGender } from '@/app/components/gender';
 import { applyTheme } from '@/app/components/ThemePicker';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Maximize2, Minimize2 } from 'lucide-react';
@@ -133,11 +134,11 @@ export default function App() {
     if (fallback) applyUser(fallback);
   };
 
-  const handleCreate = async (date: string, name: string, nameEn: string, pin: string, theme: string) => {
+  const handleCreate = async (date: string, name: string, nameEn: string, pin: string, theme: string, gender: string) => {
     const res = await fetch('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, nameEn, pin, weddingDate: date, theme })
+      body: JSON.stringify({ name, nameEn, pin, weddingDate: date, theme, gender })
     });
     if (!res.ok) throw new Error('Failed to save');
     const { user, token }: { user: WeddingUser; token: string } = await res.json();
@@ -213,6 +214,9 @@ export default function App() {
   const isRTL = language === 'ar';
 
   const ownerName = activeUser ? displayName(activeUser, language) : '';
+  // The page speaks about a groom or a bride once a countdown is open
+  const ownerSubtitle = activeUser ? forGender('subtitle', activeUser.gender, language) : currentText.subtitle;
+  const ownerRole = activeUser ? forGender('role', activeUser.gender, language) : '';
 
   const sidebar = (
     <UsersSidebar
@@ -266,6 +270,7 @@ export default function App() {
         <Celebration
           language={language}
           name={ownerName}
+          gender={activeUser?.gender}
           details={profileDetails}
           actions={profileButton}
           className={isSidebarDocked ? 'md:start-72' : ''}
@@ -388,7 +393,7 @@ export default function App() {
               className="text-lg md:text-xl text-taupe"
               style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
             >
-              {currentText.subtitle}
+              {ownerSubtitle}
             </p>
             {!ownerName && isLoadingUsers && (
               <div className="mt-4 flex justify-center">
@@ -401,6 +406,14 @@ export default function App() {
                 style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
               >
                 {ownerName}
+              </p>
+            )}
+            {ownerRole && (
+              <p
+                className="mt-1 text-sm md:text-base text-[var(--c-muted)]"
+                style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+              >
+                {activeUser?.gender === 'female' ? '👰' : '🤵'} {ownerRole}
               </p>
             )}
             {isLoadingDetails && !profileDetails ? (

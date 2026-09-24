@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Users, X, Heart, PanelLeftClose, PanelRightClose, Search } from 'lucide-react';
 
 export interface WeddingUser {
+    gender?: string | null;
     slug: string;
     name: string;
     name_en: string | null;
@@ -246,7 +247,7 @@ function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
                                     />
                                 ) : (
                                     <div className="w-10 h-10 rounded-full bg-champagne border border-gold/50 flex items-center justify-center shrink-0">
-                                        <Heart className="w-4 h-4 text-gold fill-gold" />
+                                        <span aria-hidden="true" className="text-lg">{user.gender === 'female' ? '👰' : '🤵'}</span>
                                     </div>
                                 )}
                                 <div className="min-w-0 flex-1">

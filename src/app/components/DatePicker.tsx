@@ -6,7 +6,7 @@ import { ThemePicker, DEFAULT_THEME } from '@/app/components/ThemePicker';
 
 interface DatePickerProps {
     // Receives the chosen date and names; may throw to show an error
-    onSubmit: (date: string, nameAr: string, nameEn: string, pin: string, theme: string) => void | Promise<void>;
+    onSubmit: (date: string, nameAr: string, nameEn: string, pin: string, theme: string, gender: string) => void | Promise<void>;
     language: string;
 }
 
@@ -17,6 +17,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
     const [nameEn, setNameEn] = useState('');
     const [pin, setPin] = useState('');
     const [theme, setTheme] = useState<string>(DEFAULT_THEME);
+    const [gender, setGender] = useState<'male' | 'female'>('male');
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
 
@@ -34,7 +35,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
         setError('');
         setSaving(true);
         try {
-            await onSubmit(selectedDate, nameAr.trim(), nameEn.trim(), pin, theme);
+            await onSubmit(selectedDate, nameAr.trim(), nameEn.trim(), pin, theme, gender);
             setIsOpen(false);
         } catch {
             setError(currentText.saveError);
@@ -62,6 +63,9 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             saveError: 'Could not save, please try again',
             label: 'Wedding Date',
             themeLabel: 'Site Colors',
+            genderLabel: 'You are',
+            groom: 'Groom',
+            bride: 'Bride',
             cancel: 'Cancel',
             save: 'Create',
             pastError: 'Please choose a date in the future'
@@ -80,6 +84,9 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             saveError: 'تعذّر الحفظ، يُرجى المحاولة مرة أخرى',
             label: 'تاريخ الزفاف',
             themeLabel: 'ألوان الصفحة',
+            genderLabel: 'أنت',
+            groom: 'عريس',
+            bride: 'عروس',
             cancel: 'إلغاء',
             save: 'إنشاء العدّاد',
             pastError: 'يُرجى اختيار تاريخ في المستقبل'
@@ -142,6 +149,33 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                 </div>
 
                                 <form onSubmit={handleSubmit}>
+                                    <div className="mb-4">
+                                        <label
+                                            className="block mb-2 text-[var(--c-ink)]"
+                                            style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+                                        >
+                                            {currentText.genderLabel}
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {([
+                                                { value: 'male', label: currentText.groom, icon: '🤵' },
+                                                { value: 'female', label: currentText.bride, icon: '👰' }
+                                            ] as const).map(option => (
+                                                <button
+                                                    key={option.value}
+                                                    type="button"
+                                                    onClick={() => setGender(option.value)}
+                                                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${gender === option.value
+                                                        ? 'border-[var(--c-gold)] bg-[var(--c-gold-light)]'
+                                                        : 'border-[var(--c-gold)]/40 hover:bg-[var(--c-surface)]'}`}
+                                                >
+                                                    <span aria-hidden="true">{option.icon}</span>
+                                                    <span>{option.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
                                     {[
                                         { label: currentText.nameArLabel, placeholder: currentText.nameArPlaceholder, value: nameAr, set: setNameAr, dir: 'rtl' },
                                         { label: currentText.nameEnLabel, placeholder: currentText.nameEnPlaceholder, value: nameEn, set: setNameEn, dir: 'ltr' }

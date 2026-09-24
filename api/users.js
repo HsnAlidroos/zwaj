@@ -1,4 +1,4 @@
-import { THEMES, addUser, getUser, listUsers } from './_db.js';
+import { GENDERS, THEMES, addUser, getUser, listUsers } from './_db.js';
 import { createToken } from './_auth.js';
 
 export default async function handler(req, res) {
@@ -15,14 +15,16 @@ export default async function handler(req, res) {
       const weddingDate = typeof req.body?.weddingDate === 'string' ? req.body.weddingDate : '';
       const pin = typeof req.body?.pin === 'string' ? req.body.pin : '';
       const theme = req.body?.theme ?? null;
+      const gender = req.body?.gender ?? 'male';
       const time = new Date(weddingDate).getTime();
       if (!name || name.length > 100) return res.status(400).json({ error: 'name is required' });
       if (Number.isNaN(time) || time <= Date.now()) return res.status(400).json({ error: 'date must be in the future' });
       if (pin.length < 4 || pin.length > 64) return res.status(400).json({ error: 'code must be 4-64 characters' });
       if (theme != null && !THEMES.includes(theme)) return res.status(400).json({ error: 'invalid theme' });
+      if (!GENDERS.includes(gender)) return res.status(400).json({ error: 'invalid gender' });
       // Fail before saving if sessions aren't configured, so a retry doesn't create duplicates
       createToken('check');
-      const user = await addUser(name, nameEn, weddingDate, pin, theme);
+      const user = await addUser(name, nameEn, weddingDate, pin, theme, gender);
       return res.status(201).json({ user, token: createToken(user.slug) });
     }
     res.setHeader('Allow', 'GET, POST');

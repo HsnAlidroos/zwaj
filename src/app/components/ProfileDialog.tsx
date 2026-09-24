@@ -6,6 +6,7 @@ import { PasswordInput } from '@/app/components/PasswordInput';
 import { PhotoPreview } from '@/app/components/PhotoPreview';
 import { ImageCropper } from '@/app/components/ImageCropper';
 import { Spinner } from '@/app/components/Spinner';
+import { forGender } from '@/app/components/gender';
 import { ThemePicker, DEFAULT_THEME, applyTheme } from '@/app/components/ThemePicker';
 
 export const tokenKey = (slug: string) => `zwaj-token-${slug}`;
@@ -469,7 +470,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                 value={profile.bio ?? ''}
                                                 maxLength={MAX_BIO}
                                                 rows={4}
-                                                placeholder={t.bioPlaceholder}
+                                                placeholder={forGender('bioPlaceholder', user.gender, language)}
                                                 onChange={(e) => update({ bio: e.target.value })}
                                                 className={`${inputClass} resize-none ${profile.show_bio ? '' : 'opacity-60'}`}
                                             />
