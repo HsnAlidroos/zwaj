@@ -29,7 +29,7 @@ export function PasswordInput({ value, onChange, className, ...inputProps }: Pas
             <button
                 type="button"
                 onClick={() => setVisible(v => !v)}
-                className="absolute inset-y-0 end-0 px-4 flex items-center text-[#8B7355] hover:text-[#2C2C2C] transition-colors"
+                className="absolute inset-y-0 end-0 px-4 flex items-center text-taupe hover:text-ink transition-colors"
                 tabIndex={-1}
                 aria-label={visible ? 'Hide' : 'Show'}
             >

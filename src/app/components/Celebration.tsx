@@ -8,11 +8,11 @@ interface CelebrationProps {
     details?: ReactNode;
     actions?: ReactNode;
     className?: string;
-    onSubmit: (date: string, nameAr: string, nameEn: string) => void | Promise<void>;
+    onSubmit: (date: string, nameAr: string, nameEn: string, pin: string, theme: string) => void | Promise<void>;
 }
 
 const floaters = ['🎈', '💖', '🎉', '💕', '✨', '💍', '🌸', '💗'];
-const confettiColors = ['#D4AF37', '#E8C872', '#C19B2F', '#F4D9A0', '#E6A4B4', '#FFFFFF'];
+const confettiColors = ['var(--c-gold)', 'var(--c-gold-soft)', 'var(--c-gold-hover)', 'var(--c-gold-light)', 'var(--c-blush)', '#FFFFFF'];
 
 export function Celebration({ language, name, details, actions, className = '', onSubmit }: CelebrationProps) {
     const isRTL = language === 'ar';
@@ -58,7 +58,7 @@ export function Celebration({ language, name, details, actions, className = '', 
 
     return (
         <div
-            className={`fixed inset-0 z-[100] overflow-x-hidden bg-gradient-to-br from-[#FBF6E9] via-[#F5E9C8] to-[#EAD49A] flex flex-col items-center justify-center px-4 overflow-y-auto ${className}`}
+            className={`fixed inset-0 z-[100] overflow-x-hidden bg-gradient-to-br from-celebrate-1 via-champagne to-celebrate-2 flex flex-col items-center justify-center px-4 overflow-y-auto ${className}`}
             dir={isRTL ? 'rtl' : 'ltr'}
         >
             {/* Confetti */}
@@ -96,10 +96,10 @@ export function Celebration({ language, name, details, actions, className = '', 
                 <CongratsArt />
 
                 <motion.h1
-                    className="text-6xl md:text-8xl text-[#8B6914] mt-4"
+                    className="text-6xl md:text-8xl text-gold-dark mt-4"
                     style={{
                         fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif',
-                        textShadow: '0 4px 20px rgba(212, 175, 55, 0.45)'
+                        textShadow: '0 4px 20px color-mix(in srgb, var(--c-gold) 45%, transparent)'
                     }}
                     animate={{ scale: [1, 1.06, 1] }}
                     transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
@@ -108,7 +108,7 @@ export function Celebration({ language, name, details, actions, className = '', 
                 </motion.h1>
 
                 <p
-                    className="mt-3 text-lg md:text-xl text-[#8B7355]"
+                    className="mt-3 text-lg md:text-xl text-taupe"
                     style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                 >
                     {t.sub}
@@ -116,7 +116,7 @@ export function Celebration({ language, name, details, actions, className = '', 
 
                 {name && (
                     <p
-                        className="mt-4 text-3xl md:text-4xl text-[#8B6914]"
+                        className="mt-4 text-3xl md:text-4xl text-gold-dark"
                         style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
                     >
                         {name}
@@ -126,7 +126,7 @@ export function Celebration({ language, name, details, actions, className = '', 
                 {details}
 
                 <p
-                    className="mt-6 text-xl md:text-3xl text-[#2C2C2C] leading-relaxed"
+                    className="mt-6 text-xl md:text-3xl text-ink leading-relaxed"
                     style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
                 >
                     {t.dua}
@@ -154,13 +154,13 @@ function CongratsArt() {
         >
             <defs>
                 <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#F4D9A0" />
-                    <stop offset="50%" stopColor="#D4AF37" />
-                    <stop offset="100%" stopColor="#A67C1B" />
+                    <stop offset="0%" stopColor="var(--c-gold-light)" />
+                    <stop offset="50%" stopColor="var(--c-gold)" />
+                    <stop offset="100%" stopColor="var(--c-gold-deep)" />
                 </linearGradient>
                 <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#FFF8E1" stopOpacity="1" />
-                    <stop offset="100%" stopColor="#FFF8E1" stopOpacity="0" />
+                    <stop offset="0%" stopColor="var(--c-glow)" stopOpacity="1" />
+                    <stop offset="100%" stopColor="var(--c-glow)" stopOpacity="0" />
                 </radialGradient>
             </defs>
 
@@ -181,22 +181,22 @@ function CongratsArt() {
             <circle cx="104" cy="104" r="26" fill="none" stroke="url(#gold)" strokeWidth="7" />
             <circle cx="136" cy="104" r="26" fill="none" stroke="url(#gold)" strokeWidth="7" />
             {/* Diamond */}
-            <path d="M128 70 L136 60 L144 70 L136 80 Z" fill="#FFFFFF" stroke="#D4AF37" strokeWidth="2" />
+            <path d="M128 70 L136 60 L144 70 L136 80 Z" fill="#FFFFFF" stroke="var(--c-gold)" strokeWidth="2" />
 
             {/* Hearts */}
             <path
                 d="M120 150 C112 142 104 138 104 131 C104 126 108 122 112 122 C116 122 118 125 120 127 C122 125 124 122 128 122 C132 122 136 126 136 131 C136 138 128 142 120 150 Z"
-                fill="#E6A4B4"
+                fill="var(--c-blush)"
             />
-            <path d="M66 58 c-3-3-6-4-6-7 a3 3 0 0 1 6-1 a3 3 0 0 1 6 1 c0 3-3 4-6 7z" fill="#D4AF37" />
-            <path d="M174 58 c-3-3-6-4-6-7 a3 3 0 0 1 6-1 a3 3 0 0 1 6 1 c0 3-3 4-6 7z" fill="#D4AF37" />
+            <path d="M66 58 c-3-3-6-4-6-7 a3 3 0 0 1 6-1 a3 3 0 0 1 6 1 c0 3-3 4-6 7z" fill="var(--c-gold)" />
+            <path d="M174 58 c-3-3-6-4-6-7 a3 3 0 0 1 6-1 a3 3 0 0 1 6 1 c0 3-3 4-6 7z" fill="var(--c-gold)" />
 
             {/* Sparkles */}
             {[[70, 120], [170, 120], [120, 45]].map(([x, y], i) => (
                 <path
                     key={i}
                     d={`M${x} ${y - 7} L${x + 2} ${y - 2} L${x + 7} ${y} L${x + 2} ${y + 2} L${x} ${y + 7} L${x - 2} ${y + 2} L${x - 7} ${y} L${x - 2} ${y - 2} Z`}
-                    fill="#D4AF37"
+                    fill="var(--c-gold)"
                 />
             ))}
         </motion.svg>

@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Calendar, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PasswordInput } from '@/app/components/PasswordInput';
+import { ThemePicker, DEFAULT_THEME } from '@/app/components/ThemePicker';
 
 interface DatePickerProps {
     // Receives the chosen date and names; may throw to show an error
-    onSubmit: (date: string, nameAr: string, nameEn: string, pin: string) => void | Promise<void>;
+    onSubmit: (date: string, nameAr: string, nameEn: string, pin: string, theme: string) => void | Promise<void>;
     language: string;
 }
 
@@ -15,6 +16,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
     const [nameAr, setNameAr] = useState('');
     const [nameEn, setNameEn] = useState('');
     const [pin, setPin] = useState('');
+    const [theme, setTheme] = useState<string>(DEFAULT_THEME);
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
 
@@ -32,7 +34,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
         setError('');
         setSaving(true);
         try {
-            await onSubmit(selectedDate, nameAr.trim(), nameEn.trim(), pin);
+            await onSubmit(selectedDate, nameAr.trim(), nameEn.trim(), pin, theme);
             setIsOpen(false);
         } catch {
             setError(currentText.saveError);
@@ -59,6 +61,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             saving: 'Saving...',
             saveError: 'Could not save, please try again',
             label: 'Wedding Date',
+            themeLabel: 'Site Colors',
             cancel: 'Cancel',
             save: 'Create',
             pastError: 'Please choose a date in the future'
@@ -76,6 +79,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             saving: 'جارٍ الحفظ…',
             saveError: 'تعذّر الحفظ، يُرجى المحاولة مرة أخرى',
             label: 'تاريخ الزفاف',
+            themeLabel: 'ألوان الصفحة',
             cancel: 'إلغاء',
             save: 'إنشاء العدّاد',
             pastError: 'يُرجى اختيار تاريخ في المستقبل'
@@ -89,7 +93,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
         <>
             <motion.button
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 bg-[#D4AF37] text-white px-6 md:px-8 py-3 md:py-4 rounded-full hover:bg-[#C19B2F] transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="flex items-center gap-2 bg-gold text-white px-6 md:px-8 py-3 md:py-4 rounded-full hover:bg-gold-hover transition-all duration-300 shadow-lg hover:shadow-xl"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
@@ -124,14 +128,14 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                             >
                                 <div className="flex justify-between items-center mb-6">
                                     <h2
-                                        className="text-2xl text-[#2C2C2C]"
+                                        className="text-2xl text-ink"
                                         style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
                                     >
                                         {currentText.title}
                                     </h2>
                                     <button
                                         onClick={() => setIsOpen(false)}
-                                        className="text-[#8B7355] hover:text-[#2C2C2C] transition-colors"
+                                        className="text-taupe hover:text-ink transition-colors"
                                     >
                                         <X className="w-6 h-6" />
                                     </button>
@@ -144,7 +148,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                     ].map(field => (
                                         <div className="mb-4" key={field.dir}>
                                             <label
-                                                className="block mb-2 text-[#2C2C2C]"
+                                                className="block mb-2 text-ink"
                                                 style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                                             >
                                                 {field.label}
@@ -156,7 +160,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                                 maxLength={100}
                                                 placeholder={field.placeholder}
                                                 onChange={(e) => field.set(e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]"
+                                                className="w-full px-4 py-3 border-2 border-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-cream"
                                                 required
                                             />
                                         </div>
@@ -164,7 +168,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
 
                                     <div className="mb-4">
                                         <label
-                                            className="block mb-2 text-[#2C2C2C]"
+                                            className="block mb-2 text-ink"
                                             style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                                         >
                                             {currentText.pinLabel}
@@ -178,15 +182,25 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                                 setPin(value);
                                                 setError('');
                                             }}
-                                            className="w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]"
+                                            className="w-full px-4 py-3 border-2 border-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-cream"
                                             required
                                         />
-                                        <p className="mt-1 text-xs text-[#8B7355]">{currentText.pinHint}</p>
+                                        <p className="mt-1 text-xs text-taupe">{currentText.pinHint}</p>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <span
+                                            className="block mb-2 text-ink"
+                                            style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+                                        >
+                                            {currentText.themeLabel}
+                                        </span>
+                                        <ThemePicker value={theme} language={language} onChange={setTheme} />
                                     </div>
 
                                     <div className="mb-6">
                                         <label
-                                            className="block mb-2 text-[#2C2C2C]"
+                                            className="block mb-2 text-ink"
                                             style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                                         >
                                             {currentText.label}
@@ -199,7 +213,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                                 setSelectedDate(e.target.value);
                                                 setError('');
                                             }}
-                                            className="w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]"
+                                            className="w-full px-4 py-3 border-2 border-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-cream"
                                             required
                                         />
                                         {error && (
@@ -211,7 +225,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                         <button
                                             type="button"
                                             onClick={() => setIsOpen(false)}
-                                            className="flex-1 px-4 py-3 border-2 border-[#D4AF37] text-[#2C2C2C] rounded-lg hover:bg-[#F5F3EE] transition-all duration-300"
+                                            className="flex-1 px-4 py-3 border-2 border-gold text-ink rounded-lg hover:bg-cream transition-all duration-300"
                                             style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                                         >
                                             {currentText.cancel}
@@ -219,7 +233,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                         <button
                                             type="submit"
                                             disabled={saving}
-                                            className="flex-1 px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2F] transition-all duration-300 shadow-md"
+                                            className="flex-1 px-4 py-3 bg-gold text-white rounded-lg hover:bg-gold-hover transition-all duration-300 shadow-md"
                                             style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                                         >
                                             {saving ? currentText.saving : currentText.save}

@@ -117,11 +117,11 @@ function TimerUnit({ value, label, language, isSeconds = false }: TimerUnitProps
             className="flex flex-col items-center min-w-[80px] md:min-w-[120px]"
         >
             <div
-                className="bg-[#F5F3EE] border-2 border-[#D4AF37] rounded-lg p-4 md:p-6 w-full shadow-lg"
+                className="bg-cream border-2 border-gold rounded-lg p-4 md:p-6 w-full shadow-lg"
             >
                 <motion.div
                     key={value}
-                    className={`text-3xl md:text-5xl font-serif text-[#2C2C2C] ${isRTL ? 'font-arabic' : ''}`}
+                    className={`text-3xl md:text-5xl font-serif text-ink ${isRTL ? 'font-arabic' : ''}`}
                     style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
                     animate={isSeconds ? { scale: [1, 1.15, 1] } : {}}
                     transition={{ duration: 0.6, ease: "easeInOut" }}
@@ -130,7 +130,7 @@ function TimerUnit({ value, label, language, isSeconds = false }: TimerUnitProps
                 </motion.div>
             </div>
             <div
-                className={`mt-3 text-sm md:text-base text-[#8B7355] uppercase tracking-wider ${isRTL ? 'font-arabic' : ''}`}
+                className={`mt-3 text-sm md:text-base text-taupe uppercase tracking-wider ${isRTL ? 'font-arabic' : ''}`}
                 style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
             >
                 {label}

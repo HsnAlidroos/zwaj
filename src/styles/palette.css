@@ -1,0 +1,133 @@
+/* Site color themes; each owner picks one, applied via <html data-theme="..."> */
+:root,
+[data-theme='gold'] {
+  --c-gold: #D4AF37;
+  --c-gold-hover: #C19B2F;
+  --c-gold-dark: #8B6914;
+  --c-gold-light: #F4D9A0;
+  --c-gold-soft: #E8C872;
+  --c-gold-deep: #A67C1B;
+  --c-ink: #2C2C2C;
+  --c-taupe: #8B7355;
+  --c-cocoa: #5C4A32;
+  --c-cream: #F5F3EE;
+  --c-ivory: #FBF9F4;
+  --c-linen: #F0EDE5;
+  --c-sand: #EDE7D9;
+  --c-mist: #E8E6E1;
+  --c-champagne: #F5E9C8;
+  --c-celebrate-1: #FBF6E9;
+  --c-celebrate-2: #EAD49A;
+  --c-glow: #FFF8E1;
+  --c-blush: #E6A4B4;
+}
+
+[data-theme='rose'] {
+  --c-gold: #D46A86;
+  --c-gold-hover: #BD5572;
+  --c-gold-dark: #8E2F4A;
+  --c-gold-light: #F4C3D0;
+  --c-gold-soft: #E896AB;
+  --c-gold-deep: #A23E5A;
+  --c-ink: #2E2528;
+  --c-taupe: #8C6670;
+  --c-cocoa: #5E3A45;
+  --c-cream: #FBF1F3;
+  --c-ivory: #FDF7F8;
+  --c-linen: #F6E6EA;
+  --c-sand: #F1DCE2;
+  --c-mist: #EFE2E5;
+  --c-champagne: #F8DCE3;
+  --c-celebrate-1: #FDF3F5;
+  --c-celebrate-2: #EFB3C3;
+  --c-glow: #FFF0F4;
+  --c-blush: #D4AF37;
+}
+
+[data-theme='sage'] {
+  --c-gold: #6F9A6B;
+  --c-gold-hover: #5C8558;
+  --c-gold-dark: #3E5F3B;
+  --c-gold-light: #C6DCC2;
+  --c-gold-soft: #9DBF98;
+  --c-gold-deep: #4B7247;
+  --c-ink: #26302A;
+  --c-taupe: #6B7A68;
+  --c-cocoa: #3F4C3D;
+  --c-cream: #F1F4EE;
+  --c-ivory: #F8FAF6;
+  --c-linen: #E7EDE3;
+  --c-sand: #DFE7DA;
+  --c-mist: #E3E8E0;
+  --c-champagne: #DDEAD8;
+  --c-celebrate-1: #F4F8F1;
+  --c-celebrate-2: #B9D2B3;
+  --c-glow: #F3FAEF;
+  --c-blush: #E6A4B4;
+}
+
+[data-theme='lavender'] {
+  --c-gold: #8E74C4;
+  --c-gold-hover: #7A5FB2;
+  --c-gold-dark: #4E3A80;
+  --c-gold-light: #D8CCF0;
+  --c-gold-soft: #B3A0DE;
+  --c-gold-deep: #624A9A;
+  --c-ink: #2A2633;
+  --c-taupe: #75698C;
+  --c-cocoa: #473C5C;
+  --c-cream: #F4F1FA;
+  --c-ivory: #FAF8FD;
+  --c-linen: #ECE7F6;
+  --c-sand: #E4DDF2;
+  --c-mist: #E7E3EF;
+  --c-champagne: #E6DCF6;
+  --c-celebrate-1: #F7F3FD;
+  --c-celebrate-2: #C9B8EC;
+  --c-glow: #F6F1FF;
+  --c-blush: #E6A4B4;
+}
+
+[data-theme='ocean'] {
+  --c-gold: #3A8FB7;
+  --c-gold-hover: #2F7A9E;
+  --c-gold-dark: #1D4F6B;
+  --c-gold-light: #BFE0EF;
+  --c-gold-soft: #7FBCD9;
+  --c-gold-deep: #256584;
+  --c-ink: #1F2A30;
+  --c-taupe: #5F7885;
+  --c-cocoa: #34505E;
+  --c-cream: #EEF5F8;
+  --c-ivory: #F6FAFC;
+  --c-linen: #E2EEF3;
+  --c-sand: #D8E7EE;
+  --c-mist: #E0E9ED;
+  --c-champagne: #D5EAF4;
+  --c-celebrate-1: #F1F8FB;
+  --c-celebrate-2: #A6D1E6;
+  --c-glow: #EEF9FF;
+  --c-blush: #F2B8A0;
+}
+
+@theme inline {
+  --color-gold: var(--c-gold);
+  --color-gold-hover: var(--c-gold-hover);
+  --color-gold-dark: var(--c-gold-dark);
+  --color-gold-light: var(--c-gold-light);
+  --color-gold-soft: var(--c-gold-soft);
+  --color-gold-deep: var(--c-gold-deep);
+  --color-ink: var(--c-ink);
+  --color-taupe: var(--c-taupe);
+  --color-cocoa: var(--c-cocoa);
+  --color-cream: var(--c-cream);
+  --color-ivory: var(--c-ivory);
+  --color-linen: var(--c-linen);
+  --color-sand: var(--c-sand);
+  --color-mist: var(--c-mist);
+  --color-champagne: var(--c-champagne);
+  --color-celebrate-1: var(--c-celebrate-1);
+  --color-celebrate-2: var(--c-celebrate-2);
+  --color-glow: var(--c-glow);
+  --color-blush: var(--c-blush);
+}

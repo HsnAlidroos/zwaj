@@ -9,6 +9,7 @@ export interface WeddingUser {
     bio?: string | null;
     photo?: string | null;
     photo_thumb?: string | null;
+    theme?: string | null;
 }
 
 export function displayName(user: WeddingUser, language: string) {
@@ -55,7 +56,7 @@ export function UsersSidebar({
             {/* Toggle button: hidden on desktop while the panel is open (the panel has its own) */}
             <motion.button
                 onClick={handleToggle}
-                className={`fixed top-4 md:top-6 start-4 md:start-6 z-[110] p-2 rounded-full bg-white/60 hover:bg-white text-[#D4AF37] shadow-sm transition-colors ${isDocked ? 'md:hidden' : ''}`}
+                className={`fixed top-4 md:top-6 start-4 md:start-6 z-[110] p-2 rounded-full bg-white/60 hover:bg-white text-gold shadow-sm transition-colors ${isDocked ? 'md:hidden' : ''}`}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 title={title}
@@ -67,7 +68,7 @@ export function UsersSidebar({
             <AnimatePresence>
                 {isDocked && (
                     <motion.aside
-                        className="hidden md:flex fixed top-0 bottom-0 start-0 w-72 z-[105] bg-[#FBF9F4] border-e border-[#D4AF37]/30 shadow-lg flex-col cursor-default"
+                        className="hidden md:flex fixed top-0 bottom-0 start-0 w-72 z-[105] bg-ivory border-e border-gold/30 shadow-lg flex-col cursor-default"
                         dir={isRTL ? 'rtl' : 'ltr'}
                         initial={{ x: isRTL ? '100%' : '-100%' }}
                         animate={{ x: 0 }}
@@ -75,14 +76,14 @@ export function UsersSidebar({
                         transition={{ type: 'spring', damping: 30, stiffness: 280 }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="flex items-center justify-between p-5 border-b border-[#D4AF37]/30">
-                            <h2 className="text-2xl text-[#2C2C2C] flex items-center gap-2" style={{ fontFamily: titleFont }}>
-                                <Users className="w-5 h-5 text-[#D4AF37]" />
+                        <div className="flex items-center justify-between p-5 border-b border-gold/30">
+                            <h2 className="text-2xl text-ink flex items-center gap-2" style={{ fontFamily: titleFont }}>
+                                <Users className="w-5 h-5 text-gold" />
                                 {title}
                             </h2>
                             <button
                                 onClick={() => onDockedChange(false)}
-                                className="text-[#8B7355] hover:text-[#2C2C2C] transition-colors"
+                                className="text-taupe hover:text-ink transition-colors"
                                 title={hideLabel}
                             >
                                 <HideIcon className="w-5 h-5" />
@@ -108,7 +109,7 @@ export function UsersSidebar({
                             }}
                         />
                         <motion.aside
-                            className="fixed top-0 bottom-0 start-0 w-80 max-w-[85vw] bg-[#FBF9F4] shadow-2xl z-[120] flex flex-col cursor-default"
+                            className="fixed top-0 bottom-0 start-0 w-80 max-w-[85vw] bg-ivory shadow-2xl z-[120] flex flex-col cursor-default"
                             dir={isRTL ? 'rtl' : 'ltr'}
                             initial={{ x: isRTL ? '100%' : '-100%' }}
                             animate={{ x: 0 }}
@@ -116,13 +117,13 @@ export function UsersSidebar({
                             transition={{ type: 'spring', damping: 28, stiffness: 260 }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="flex items-center justify-between p-5 border-b border-[#D4AF37]/30">
-                                <h2 className="text-2xl text-[#2C2C2C]" style={{ fontFamily: titleFont }}>
+                            <div className="flex items-center justify-between p-5 border-b border-gold/30">
+                                <h2 className="text-2xl text-ink" style={{ fontFamily: titleFont }}>
                                     {title}
                                 </h2>
                                 <button
                                     onClick={() => onOpenChange(false)}
-                                    className="text-[#8B7355] hover:text-[#2C2C2C] transition-colors"
+                                    className="text-taupe hover:text-ink transition-colors"
                                 >
                                     <X className="w-6 h-6" />
                                 </button>
@@ -143,10 +144,10 @@ function UsersListSkeleton() {
             {Array.from({ length: 5 }, (_, i) => (
                 <li key={i} className="px-4 py-3 rounded-xl border-2 border-transparent">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#EDE7D9] animate-pulse shrink-0" />
+                        <div className="w-10 h-10 rounded-full bg-sand animate-pulse shrink-0" />
                         <div className="flex-1 space-y-2">
-                            <div className="h-4 rounded bg-[#EDE7D9] animate-pulse" style={{ width: `${70 - i * 6}%` }} />
-                            <div className="h-3 w-24 rounded bg-[#F1ECE1] animate-pulse" />
+                            <div className="h-4 rounded bg-sand animate-pulse" style={{ width: `${70 - i * 6}%` }} />
+                            <div className="h-3 w-24 rounded bg-sand animate-pulse" />
                         </div>
                     </div>
                 </li>
@@ -180,29 +181,29 @@ function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
                         <button
                             onClick={() => onSelect(user)}
                             className={`w-full text-start px-4 py-3 rounded-xl border-2 transition-all ${active
-                                ? 'border-[#D4AF37] bg-[#F5E9C8]'
-                                : 'border-transparent hover:bg-[#F5F3EE]'}`}
+                                ? 'border-gold bg-champagne'
+                                : 'border-transparent hover:bg-cream'}`}
                         >
                             <div className="flex items-center gap-3">
                                 {user.photo_thumb ? (
                                     <img
                                         src={user.photo_thumb}
                                         alt=""
-                                        className="w-10 h-10 rounded-full object-cover border border-[#D4AF37] shrink-0"
+                                        className="w-10 h-10 rounded-full object-cover border border-gold shrink-0"
                                     />
                                 ) : (
-                                    <div className="w-10 h-10 rounded-full bg-[#F5E9C8] border border-[#D4AF37]/50 flex items-center justify-center shrink-0">
-                                        <Heart className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+                                    <div className="w-10 h-10 rounded-full bg-champagne border border-gold/50 flex items-center justify-center shrink-0">
+                                        <Heart className="w-4 h-4 text-gold fill-gold" />
                                     </div>
                                 )}
                                 <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2 text-[#2C2C2C]" style={{ fontFamily: bodyFont }}>
-                                        {active && <Heart className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37] shrink-0" />}
+                                    <div className="flex items-center gap-2 text-ink" style={{ fontFamily: bodyFont }}>
+                                        {active && <Heart className="w-3 h-3 text-gold fill-gold shrink-0" />}
                                         <span className="truncate font-medium">{displayName(user, language)}</span>
                                     </div>
-                                    <div className="mt-1 text-sm text-[#8B7355]" style={{ fontFamily: bodyFont }}>
+                                    <div className="mt-1 text-sm text-taupe" style={{ fontFamily: bodyFont }}>
                                         {formatDate(user.wedding_date)}
-                                        {done && <span className="ms-2 text-[#D4AF37]">· {doneLabel}</span>}
+                                        {done && <span className="ms-2 text-gold">· {doneLabel}</span>}
                                     </div>
                                 </div>
                             </div>

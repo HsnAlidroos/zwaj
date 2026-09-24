@@ -84,11 +84,11 @@ export function ImageCropper({ file, language, onCancel, onDone, onError }: Imag
 
     return (
         <div className="space-y-4" dir={isRTL ? 'rtl' : 'ltr'}>
-            <p className="text-[#2C2C2C]">{t.title}</p>
+            <p className="text-ink">{t.title}</p>
 
             <div className="flex justify-center">
                 <div
-                    className="relative rounded-full overflow-hidden border-2 border-[#D4AF37] bg-[#F5F3EE] touch-none cursor-grab active:cursor-grabbing"
+                    className="relative rounded-full overflow-hidden border-2 border-gold bg-cream touch-none cursor-grab active:cursor-grabbing"
                     style={{ width: VIEW, height: VIEW }}
                     onPointerDown={handlePointerDown}
                     onPointerMove={handlePointerMove}
@@ -110,10 +110,10 @@ export function ImageCropper({ file, language, onCancel, onDone, onError }: Imag
                 </div>
             </div>
 
-            <p className="text-xs text-[#8B7355] text-center">{t.hint}</p>
+            <p className="text-xs text-taupe text-center">{t.hint}</p>
 
             <div className="flex items-center gap-3">
-                <ZoomIn className="w-5 h-5 text-[#8B7355] shrink-0" />
+                <ZoomIn className="w-5 h-5 text-taupe shrink-0" />
                 <input
                     type="range"
                     min={1}
@@ -121,7 +121,7 @@ export function ImageCropper({ file, language, onCancel, onDone, onError }: Imag
                     step={0.01}
                     value={zoom}
                     onChange={(e) => setZoom(Number(e.target.value))}
-                    className="w-full accent-[#D4AF37]"
+                    className="w-full accent-gold"
                 />
             </div>
 
@@ -129,14 +129,14 @@ export function ImageCropper({ file, language, onCancel, onDone, onError }: Imag
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="flex-1 px-4 py-3 border-2 border-[#D4AF37] text-[#2C2C2C] rounded-lg hover:bg-[#F5F3EE]"
+                    className="flex-1 px-4 py-3 border-2 border-gold text-ink rounded-lg hover:bg-cream"
                 >
                     {t.cancel}
                 </button>
                 <button
                     type="button"
                     onClick={handleDone}
-                    className="flex-1 px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2F] shadow-md"
+                    className="flex-1 px-4 py-3 bg-gold text-white rounded-lg hover:bg-gold-hover shadow-md"
                 >
                     {t.done}
                 </button>

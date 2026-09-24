@@ -6,6 +6,7 @@ import { PasswordInput } from '@/app/components/PasswordInput';
 import { PhotoPreview } from '@/app/components/PhotoPreview';
 import { ImageCropper } from '@/app/components/ImageCropper';
 import { Spinner } from '@/app/components/Spinner';
+import { ThemePicker, DEFAULT_THEME, applyTheme } from '@/app/components/ThemePicker';
 
 export const tokenKey = (slug: string) => `zwaj-token-${slug}`;
 
@@ -32,6 +33,7 @@ interface Profile {
     photo_thumb: string | null;
     show_bio: number;
     show_photo: number;
+    theme: string | null;
 }
 
 interface ProfileDialogProps {
@@ -90,6 +92,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
             removePhoto: 'Remove',
             showBio: 'Show description',
             showPhoto: 'Show photo',
+            theme: 'Site colors',
             save: 'Save',
             saved: 'Saved ✓',
             logout: 'Sign out',
@@ -119,6 +122,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
             removePhoto: 'حذف الصورة',
             showBio: 'إظهار النبذة',
             showPhoto: 'إظهار الصورة',
+            theme: 'ألوان الصفحة',
             save: 'حفظ',
             saved: 'تم الحفظ ✓',
             logout: 'تسجيل خروج',
@@ -154,6 +158,11 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
     useEffect(() => {
         if (isOpen && token && !profile) loadProfile(token).catch(() => setError(t.failed));
     }, [isOpen, token]);
+
+    // Preview the chosen colors while editing; closing without saving restores the saved ones
+    useEffect(() => {
+        applyTheme(isOpen && profile ? profile.theme : user.theme);
+    }, [isOpen, profile?.theme, user.theme]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -202,7 +211,8 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                     photo: profile.photo,
                     photoThumb: profile.photo_thumb,
                     showBio: !!profile.show_bio,
-                    showPhoto: !!profile.show_photo
+                    showPhoto: !!profile.show_photo,
+                    theme: profile.theme || DEFAULT_THEME
                 })
             });
             if (!res.ok) throw new Error('Failed');
@@ -261,7 +271,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
         setSaved(false);
     };
 
-    const inputClass = 'w-full px-4 py-3 border-2 border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-[#F5F3EE]';
+    const inputClass = 'w-full px-4 py-3 border-2 border-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-cream';
 
     return (
         <>
@@ -270,7 +280,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                     e.stopPropagation();
                     setIsOpen(true);
                 }}
-                className="flex items-center gap-2 border-2 border-[#D4AF37] text-[#8B6914] bg-white/60 px-6 py-3 rounded-full hover:bg-white transition-all duration-300 shadow-sm"
+                className="flex items-center gap-2 border-2 border-gold text-gold-dark bg-white/60 px-6 py-3 rounded-full hover:bg-white transition-all duration-300 shadow-sm"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 style={{ fontFamily: bodyFont }}
@@ -307,14 +317,14 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                             >
                                 <div className="flex justify-between items-center mb-6">
                                     <h2
-                                        className="text-2xl text-[#2C2C2C]"
+                                        className="text-2xl text-ink"
                                         style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
                                     >
                                         {t.title}
                                     </h2>
                                     <button
                                         onClick={() => setIsOpen(false)}
-                                        className="text-[#8B7355] hover:text-[#2C2C2C] transition-colors"
+                                        className="text-taupe hover:text-ink transition-colors"
                                     >
                                         <X className="w-6 h-6" />
                                     </button>
@@ -326,30 +336,30 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                             <PhotoPreview
                                                 src={user.photo}
                                                 alt={displayName(user, language)}
-                                                className="w-32 h-32 rounded-full object-cover border-4 border-[#D4AF37] shadow"
+                                                className="w-32 h-32 rounded-full object-cover border-4 border-gold shadow"
                                             />
                                         )}
                                         <p
-                                            className="text-2xl text-[#8B6914]"
+                                            className="text-2xl text-gold-dark"
                                             style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
                                         >
                                             {displayName(user, language)}
                                         </p>
-                                        <p className="text-sm text-[#8B7355]">
+                                        <p className="text-sm text-taupe">
                                             {t.weddingDate}:{' '}
                                             {new Date(user.wedding_date).toLocaleString(isRTL ? 'ar-u-ca-gregory-nu-latn' : 'en-US', {
                                                 year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit'
                                             })}
                                         </p>
                                         {user.bio ? (
-                                            <p className="text-[#2C2C2C] whitespace-pre-line leading-relaxed">{user.bio}</p>
+                                            <p className="text-ink whitespace-pre-line leading-relaxed">{user.bio}</p>
                                         ) : (
-                                            !user.photo && <p className="text-sm text-[#8B7355]">{t.empty}</p>
+                                            !user.photo && <p className="text-sm text-taupe">{t.empty}</p>
                                         )}
                                         <button
                                             type="button"
                                             onClick={() => setShowLogin(true)}
-                                            className="mt-2 flex items-center gap-2 text-sm px-4 py-2 border-2 border-[#D4AF37] rounded-full text-[#8B6914] hover:bg-[#F5F3EE]"
+                                            className="mt-2 flex items-center gap-2 text-sm px-4 py-2 border-2 border-gold rounded-full text-gold-dark hover:bg-cream"
                                         >
                                             <Pencil className="w-4 h-4" />
                                             {t.edit}
@@ -357,7 +367,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                     </div>
                                 ) : !token ? (
                                     <form onSubmit={handleLogin}>
-                                        <label className="block mb-2 text-[#2C2C2C]">{t.pinLabel}</label>
+                                        <label className="block mb-2 text-ink">{t.pinLabel}</label>
                                         <PasswordInput
                                             value={pin}
                                             autoFocus
@@ -373,14 +383,14 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                         <button
                                             type="submit"
                                             disabled={busy}
-                                            className="mt-6 w-full px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2F] transition-all duration-300 shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
+                                            className="mt-6 w-full px-4 py-3 bg-gold text-white rounded-lg hover:bg-gold-hover transition-all duration-300 shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
                                         >
                                             {busy && <Spinner className="w-4 h-4 text-white" />}
                                             {t.login}
                                         </button>
                                     </form>
                                 ) : !profile ? (
-                                    <div className="flex flex-col items-center gap-3 py-10 text-[#8B7355]">
+                                    <div className="flex flex-col items-center gap-3 py-10 text-taupe">
                                         {error ? <p>{error}</p> : <Spinner className="w-8 h-8" />}
                                     </div>
                                 ) : (
@@ -404,7 +414,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                         {/* Photo */}
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="text-[#2C2C2C]">{t.photo}</span>
+                                                <span className="text-ink">{t.photo}</span>
                                                 <Toggle
                                                     label={t.showPhoto}
                                                     checked={!!profile.show_photo}
@@ -415,10 +425,10 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                 {profile.photo ? (
                                                     <PhotoPreview
                                                         src={profile.photo}
-                                                        className={`w-20 h-20 rounded-full object-cover border-2 border-[#D4AF37] ${profile.show_photo ? '' : 'opacity-40'}`}
+                                                        className={`w-20 h-20 rounded-full object-cover border-2 border-gold ${profile.show_photo ? '' : 'opacity-40'}`}
                                                     />
                                                 ) : (
-                                                    <div className="w-20 h-20 rounded-full bg-[#F5F3EE] border-2 border-dashed border-[#D4AF37] flex items-center justify-center text-[#D4AF37]">
+                                                    <div className="w-20 h-20 rounded-full bg-cream border-2 border-dashed border-gold flex items-center justify-center text-gold">
                                                         <ImagePlus className="w-7 h-7" />
                                                     </div>
                                                 )}
@@ -426,7 +436,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                     <button
                                                         type="button"
                                                         onClick={() => fileRef.current?.click()}
-                                                        className="text-sm px-3 py-2 border-2 border-[#D4AF37] rounded-lg hover:bg-[#F5F3EE]"
+                                                        className="text-sm px-3 py-2 border-2 border-gold rounded-lg hover:bg-cream"
                                                     >
                                                         {profile.photo ? t.changePhoto : t.addPhoto}
                                                     </button>
@@ -448,7 +458,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                         {/* Bio */}
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="text-[#2C2C2C]">{t.bio}</span>
+                                                <span className="text-ink">{t.bio}</span>
                                                 <Toggle
                                                     label={t.showBio}
                                                     checked={!!profile.show_bio}
@@ -463,9 +473,19 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                 onChange={(e) => update({ bio: e.target.value })}
                                                 className={`${inputClass} resize-none ${profile.show_bio ? '' : 'opacity-60'}`}
                                             />
-                                            <p className="text-xs text-[#8B7355] text-end">
+                                            <p className="text-xs text-taupe text-end">
                                                 {(profile.bio ?? '').length}/{MAX_BIO}
                                             </p>
+                                        </div>
+
+                                        {/* Theme */}
+                                        <div>
+                                            <span className="block mb-2 text-ink">{t.theme}</span>
+                                            <ThemePicker
+                                                value={profile.theme || DEFAULT_THEME}
+                                                language={language}
+                                                onChange={(theme) => update({ theme })}
+                                            />
                                         </div>
 
                                         </>
@@ -477,7 +497,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                             <button
                                                 type="button"
                                                 onClick={handleLogout}
-                                                className="px-4 py-3 border-2 border-[#D4AF37] text-[#2C2C2C] rounded-lg hover:bg-[#F5F3EE] flex items-center gap-2"
+                                                className="px-4 py-3 border-2 border-gold text-ink rounded-lg hover:bg-cream flex items-center gap-2"
                                             >
                                                 <LogOut className="w-4 h-4" />
                                                 {t.logout}
@@ -486,7 +506,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                 type="button"
                                                 onClick={handleSave}
                                                 disabled={busy}
-                                                className="flex-1 px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2F] transition-all duration-300 shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
+                                                className="flex-1 px-4 py-3 bg-gold text-white rounded-lg hover:bg-gold-hover transition-all duration-300 shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
                                             >
                                                 {busy && <Spinner className="w-4 h-4 text-white" />}
                                                 {saved ? t.saved : t.save}
@@ -513,7 +533,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
                                                             {t.deleteWarning}
                                                         </p>
-                                                        <label className="block text-sm text-[#2C2C2C]">{t.deletePinLabel}</label>
+                                                        <label className="block text-sm text-ink">{t.deletePinLabel}</label>
                                                         <PasswordInput
                                                             value={deletePin}
                                                             autoComplete="current-password"
@@ -557,14 +577,14 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
     return (
-        <label className="flex items-center gap-2 text-sm text-[#8B7355] cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-sm text-taupe cursor-pointer select-none">
             {label}
             <button
                 type="button"
                 role="switch"
                 aria-checked={checked}
                 onClick={() => onChange(!checked)}
-                className={`relative w-10 h-6 rounded-full transition-colors ${checked ? 'bg-[#D4AF37]' : 'bg-gray-300'}`}
+                className={`relative w-10 h-6 rounded-full transition-colors ${checked ? 'bg-gold' : 'bg-gray-300'}`}
             >
                 <span
                     className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${checked ? 'start-5' : 'start-1'}`}

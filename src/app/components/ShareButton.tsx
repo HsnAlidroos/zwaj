@@ -172,7 +172,7 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
         setGeneratedImage(null);
         if (captureRef?.current) {
             generateImage(captureRef.current, {
-                backgroundColor: '#F5F3EE'
+                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--c-cream').trim() || '#F5F3EE'
             });
         }
     };
@@ -259,7 +259,7 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
             {/* Share Button */}
             <motion.button
                 onClick={() => setIsOpen(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-white rounded-full hover:bg-[#C19B2E] transition-colors shadow-lg"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gold text-white rounded-full hover:bg-gold-hover transition-colors shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
@@ -286,19 +286,19 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#F5F3EE] rounded-2xl shadow-2xl z-[10001] p-6 max-h-[90vh] overflow-y-auto"
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-cream rounded-2xl shadow-2xl z-[10001] p-6 max-h-[90vh] overflow-y-auto"
                             dir={isRTL ? 'rtl' : 'ltr'}
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between mb-4">
                                 <h2
-                                    className="text-2xl text-[#2C2C2C]"
+                                    className="text-2xl text-ink"
                                     style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
                                 >
                                     {currentText.shareTitle}
                                 </h2>
-                                <button onClick={resetModal} className="text-[#2C2C2C] hover:text-[#D4AF37]">
+                                <button onClick={resetModal} className="text-ink hover:text-gold">
                                     <X className="w-6 h-6" />
                                 </button>
                             </div>
@@ -309,21 +309,21 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
                                     value={customMessage}
                                     onChange={(e) => setCustomMessage(e.target.value)}
                                     placeholder={currentText.messagePlaceholder}
-                                    className="w-full px-4 py-3 bg-white border-2 border-[#D4AF37]/30 rounded-lg focus:outline-none focus:border-[#D4AF37] resize-none"
+                                    className="w-full px-4 py-3 bg-white border-2 border-gold/30 rounded-lg focus:outline-none focus:border-gold resize-none"
                                     rows={3}
                                     style={{
                                         fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif',
                                         textAlign: isRTL ? 'right' : 'left'
                                     }}
                                 />
-                                <p className="mt-2 text-sm text-[#8B7355]">{formatDate(weddingDate)}</p>
+                                <p className="mt-2 text-sm text-taupe">{formatDate(weddingDate)}</p>
                             </div>
 
                             {/* Tabs */}
                             <div className="flex bg-gray-200 rounded-lg p-1 mb-6">
                                 <button
                                     onClick={() => setShareType('link')}
-                                    className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${shareType === 'link' ? 'bg-white text-[#D4AF37] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${shareType === 'link' ? 'bg-white text-gold shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                     style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                                 >
                                     <div className="flex items-center justify-center gap-2">
@@ -333,7 +333,7 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
                                 </button>
                                 <button
                                     onClick={() => setShareType('image')}
-                                    className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${shareType === 'image' ? 'bg-white text-[#D4AF37] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${shareType === 'image' ? 'bg-white text-gold shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                     style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                                 >
                                     <div className="flex items-center justify-center gap-2">
@@ -346,16 +346,16 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
                             {shareType === 'link' ? (
                                 /* Link Mode */
                                 <div className="mb-6">
-                                    <p className="text-sm text-[#8B7355] mb-4">{currentText.shareVia}:</p>
+                                    <p className="text-sm text-taupe mb-4">{currentText.shareVia}:</p>
                                 </div>
                             ) : (
                                 /* Image Mode */
                                 <div className="mb-6 space-y-4">
                                     {/* Preview Area */}
-                                    <div className="bg-white p-2 rounded-lg shadow-sm border border-[#D4AF37]/20 min-h-[200px] flex items-center justify-center relative">
+                                    <div className="bg-white p-2 rounded-lg shadow-sm border border-gold/20 min-h-[200px] flex items-center justify-center relative">
                                         {isGenerating ? (
-                                            <div className="flex flex-col items-center gap-2 text-[#D4AF37]">
-                                                <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+                                            <div className="flex flex-col items-center gap-2 text-gold">
+                                                <div className="w-8 h-8 border-4 border-gold border-t-transparent rounded-full animate-spin" />
                                                 <span className="text-sm" style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}>{currentText.generating}</span>
                                             </div>
                                         ) : generatedImage ? (
@@ -380,7 +380,7 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={handleDownloadImage}
-                                                className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2E] transition-colors"
+                                                className="flex-1 flex items-center justify-center gap-2 py-2 bg-gold text-white rounded-lg hover:bg-gold-hover transition-colors"
                                                 style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                                             >
                                                 <Download className="w-4 h-4" />
@@ -399,7 +399,7 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
                                         <motion.button
                                             key={option.name}
                                             onClick={option.action}
-                                            className="flex flex-col items-center justify-center gap-1 p-2 bg-white rounded-lg hover:shadow-md transition-all border border-transparent hover:border-[#D4AF37]/30"
+                                            className="flex flex-col items-center justify-center gap-1 p-2 bg-white rounded-lg hover:shadow-md transition-all border border-transparent hover:border-gold/30"
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
                                         >
@@ -411,7 +411,7 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
 
                             <motion.button
                                 onClick={handleNativeShare}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2E] transition-colors"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gold text-white rounded-lg hover:bg-gold-hover transition-colors"
                                 style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
                             >
                                 <Share2 className="w-5 h-5" />
