@@ -19,6 +19,7 @@ const DESKTOP_QUERY = '(min-width: 768px)';
 
 interface UsersSidebarProps {
     users: WeddingUser[];
+    isLoading: boolean;
     activeSlug: string;
     language: string;
     // Drawer on phones
@@ -31,7 +32,7 @@ interface UsersSidebarProps {
 }
 
 export function UsersSidebar({
-    users, activeSlug, language, isOpen, onOpenChange, isDocked, onDockedChange, onSelect
+    users, isLoading, activeSlug, language, isOpen, onOpenChange, isDocked, onDockedChange, onSelect
 }: UsersSidebarProps) {
     const isRTL = language === 'ar';
     const title = isRTL ? 'المناسبات' : 'Countdowns';
@@ -45,9 +46,9 @@ export function UsersSidebar({
         else onOpenChange(true);
     };
 
-    const list = (
-        <UsersList users={users} activeSlug={activeSlug} language={language} onSelect={onSelect} />
-    );
+    const list = isLoading
+        ? <UsersListSkeleton />
+        : <UsersList users={users} activeSlug={activeSlug} language={language} onSelect={onSelect} />;
 
     return (
         <>
@@ -132,6 +133,25 @@ export function UsersSidebar({
                 )}
             </AnimatePresence>
         </>
+    );
+}
+
+// Placeholder rows shown while the list is loading
+function UsersListSkeleton() {
+    return (
+        <ul className="flex-1 overflow-hidden p-3 space-y-2" aria-hidden="true">
+            {Array.from({ length: 5 }, (_, i) => (
+                <li key={i} className="px-4 py-3 rounded-xl border-2 border-transparent">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[#EDE7D9] animate-pulse shrink-0" />
+                        <div className="flex-1 space-y-2">
+                            <div className="h-4 rounded bg-[#EDE7D9] animate-pulse" style={{ width: `${70 - i * 6}%` }} />
+                            <div className="h-3 w-24 rounded bg-[#F1ECE1] animate-pulse" />
+                        </div>
+                    </div>
+                </li>
+            ))}
+        </ul>
     );
 }
 

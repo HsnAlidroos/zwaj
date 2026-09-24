@@ -32,6 +32,7 @@ export default function App() {
 
   const [isDone, setIsDone] = useState(() => new Date(weddingDate).getTime() <= Date.now());
   const [users, setUsers] = useState<WeddingUser[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [activeUser, setActiveUser] = useState<WeddingUser | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarDocked, setIsSidebarDocked] = useState(() => {
@@ -91,7 +92,8 @@ export default function App() {
         setUsers(data);
         showUserFromPath(data);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setIsLoadingUsers(false));
 
     const onPopState = () => showUserFromPath(list);
     window.addEventListener('popstate', onPopState);
@@ -197,6 +199,7 @@ export default function App() {
   const sidebar = (
     <UsersSidebar
       users={users}
+      isLoading={isLoadingUsers}
       activeSlug={activeUser?.slug ?? ''}
       language={language}
       isOpen={isSidebarOpen}
