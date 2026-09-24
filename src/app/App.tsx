@@ -74,6 +74,14 @@ export default function App() {
     document.documentElement.lang = language;
   }, [language]);
 
+  // Page title follows whichever countdown is open, for sharing and search results
+  useEffect(() => {
+    const siteName = language === 'ar' ? 'زواج | Zwaj' : 'Zwaj';
+    const tagline = language === 'ar' ? 'العدّ التنازلي ليوم زفافك' : 'Countdown to your wedding day';
+    const name = activeUser ? (language === 'en' && activeUser.name_en ? activeUser.name_en : activeUser.name) : '';
+    document.title = name ? `${name} · ${siteName}` : `${siteName} · ${tagline}`;
+  }, [activeUser, language]);
+
   // Each countdown page uses its owner's chosen colors
   useEffect(() => {
     applyTheme(activeUser?.theme);
