@@ -64,7 +64,7 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         if (isRTL) {
-            return date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+            return date.toLocaleDateString('ar-u-ca-gregory-nu-latn', { year: 'numeric', month: 'long', day: 'numeric' });
         }
         return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     };

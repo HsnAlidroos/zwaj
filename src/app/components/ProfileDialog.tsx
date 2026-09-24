@@ -355,7 +355,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                         </p>
                                         <p className="text-sm text-[#8B7355]">
                                             {t.weddingDate}:{' '}
-                                            {new Date(user.wedding_date).toLocaleString(isRTL ? 'ar-SA' : 'en-US', {
+                                            {new Date(user.wedding_date).toLocaleString(isRTL ? 'ar-u-ca-gregory-nu-latn' : 'en-US', {
                                                 year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit'
                                             })}
                                         </p>

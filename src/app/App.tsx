@@ -12,7 +12,7 @@ import { Heart, Maximize2, Minimize2 } from 'lucide-react';
 const DEFAULT_SLUG = 'hassan';
 
 export default function App() {
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('ar');
   // Default wedding date (Hassan Alidroos), replaced once users load
   const [weddingDate, setWeddingDate] = useState('2026-12-05T00:00:00');
 
@@ -60,6 +60,12 @@ export default function App() {
       })
       .catch(() => {});
   };
+
+  // Fixed-position sidebars resolve start/end from the root element, so keep it in sync
+  useEffect(() => {
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [language]);
 
   const applyUser = (user: WeddingUser) => {
     setActiveUser(user);
@@ -330,7 +336,7 @@ export default function App() {
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 md:py-12 relative z-10">
         {/* Full Screen Toggle */}
         <motion.button
-          className="absolute top-4 right-4 md:top-8 md:right-8 p-2 rounded-full bg-white/50 hover:bg-white text-[#D4AF37] shadow-sm transition-colors z-50"
+          className="absolute top-4 end-4 md:top-8 md:end-8 p-2 rounded-full bg-white/50 hover:bg-white text-[#D4AF37] shadow-sm transition-colors z-50"
           onClick={(e) => {
             e.stopPropagation();
             setIsFullScreen(!isFullScreen);

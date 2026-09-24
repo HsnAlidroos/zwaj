@@ -147,7 +147,7 @@ function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
     const bodyFont = isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif';
 
     const formatDate = (date: string) =>
-        new Date(date).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        new Date(date).toLocaleDateString(isRTL ? 'ar-u-ca-gregory-nu-latn' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
     return (
         <ul className="flex-1 overflow-y-auto p-3 space-y-2">
