@@ -7,6 +7,7 @@ import { Celebration } from '@/app/components/Celebration';
 import { UsersSidebar, displayName, type WeddingUser } from '@/app/components/UsersSidebar';
 import { ProfileDialog, saveToken } from '@/app/components/ProfileDialog';
 import { PhotoPreview } from '@/app/components/PhotoPreview';
+import { Spinner, CountdownSkeleton } from '@/app/components/Spinner';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Maximize2, Minimize2 } from 'lucide-react';
 
@@ -33,6 +34,7 @@ export default function App() {
   const [isDone, setIsDone] = useState(() => new Date(weddingDate).getTime() <= Date.now());
   const [users, setUsers] = useState<WeddingUser[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [activeUser, setActiveUser] = useState<WeddingUser | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarDocked, setIsSidebarDocked] = useState(() => {
@@ -55,12 +57,14 @@ export default function App() {
 
   // Fetches the public bio/photo, which the list leaves out
   const loadUserDetails = (slug: string) => {
+    setIsLoadingDetails(true);
     fetch(`/api/users?slug=${encodeURIComponent(slug)}`)
       .then(res => (res.ok ? res.json() : null))
       .then((details: WeddingUser | null) => {
         if (details) setActiveUser(current => (current?.slug === slug ? { ...current, ...details } : current));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setIsLoadingDetails(false));
   };
 
   // Fixed-position sidebars resolve start/end from the root element, so keep it in sync
@@ -372,6 +376,11 @@ export default function App() {
             >
               {currentText.subtitle}
             </p>
+            {!ownerName && isLoadingUsers && (
+              <div className="mt-4 flex justify-center">
+                <div className="h-8 w-56 rounded bg-[#EDE7D9] animate-pulse" />
+              </div>
+            )}
             {ownerName && (
               <p
                 className="mt-4 text-2xl md:text-3xl text-[#D4AF37]"
@@ -380,7 +389,13 @@ export default function App() {
                 {ownerName}
               </p>
             )}
-            {profileDetails}
+            {isLoadingDetails && !profileDetails ? (
+              <div className="mt-6 flex flex-col items-center gap-4" aria-hidden="true">
+                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-[#EDE7D9] animate-pulse" />
+              </div>
+            ) : (
+              profileDetails
+            )}
           </motion.div>
 
           {/* Countdown Timer */}
@@ -390,7 +405,11 @@ export default function App() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mb-12 md:mb-16"
           >
-            <CountdownTimer targetDate={weddingDate} language={language} onComplete={handleComplete} />
+            {isLoadingUsers && !activeUser ? (
+              <CountdownSkeleton />
+            ) : (
+              <CountdownTimer targetDate={weddingDate} language={language} onComplete={handleComplete} />
+            )}
           </motion.div>
 
           {/* Decorative Elements */}

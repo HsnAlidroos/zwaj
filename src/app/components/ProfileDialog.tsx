@@ -4,6 +4,8 @@ import { UserRound, X, ImagePlus, Trash2, LogOut, Pencil, AlertTriangle } from '
 import { displayName, type WeddingUser } from '@/app/components/UsersSidebar';
 import { PasswordInput } from '@/app/components/PasswordInput';
 import { PhotoPreview } from '@/app/components/PhotoPreview';
+import { ImageCropper } from '@/app/components/ImageCropper';
+import { Spinner } from '@/app/components/Spinner';
 
 export const tokenKey = (slug: string) => `zwaj-token-${slug}`;
 
@@ -45,33 +47,6 @@ const DEFAULT_SLUG = 'hassan';
 
 const MAX_BIO = 500;
 
-// Builds a large copy for the page and a small one for the sidebar list
-function resizeImage(file: File): Promise<{ photo: string; thumb: string }> {
-    return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        const draw = (maxSize: number, quality: number) => {
-            const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.round(img.width * scale);
-            canvas.height = Math.round(img.height * scale);
-            canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
-            return canvas.toDataURL('image/jpeg', quality);
-        };
-        img.onload = () => {
-            const photo = draw(1000, 0.85);
-            const thumb = draw(128, 0.7);
-            URL.revokeObjectURL(url);
-            resolve({ photo, thumb });
-        };
-        img.onerror = () => {
-            URL.revokeObjectURL(url);
-            reject(new Error('Invalid image'));
-        };
-        img.src = url;
-    });
-}
-
 export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDialogProps) {
     const slug = user.slug;
     const [isOpen, setIsOpen] = useState(false);
@@ -86,6 +61,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [deletePin, setDeletePin] = useState('');
     const fileRef = useRef<HTMLInputElement>(null);
+    const [pendingFile, setPendingFile] = useState<File | null>(null);
 
     const isRTL = language === 'ar';
     const bodyFont = isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif';
@@ -205,17 +181,12 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
         }
     };
 
-    const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         e.target.value = '';
         if (!file || !profile) return;
-        try {
-            const { photo, thumb } = await resizeImage(file);
-            setProfile({ ...profile, photo, photo_thumb: thumb });
-            setSaved(false);
-        } catch {
-            setError(t.badImage);
-        }
+        setError('');
+        setPendingFile(file);
     };
 
     const handleSave = async () => {
@@ -281,6 +252,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
         setProfile(null);
         setShowLogin(false);
         setConfirmDelete(false);
+        setPendingFile(null);
     };
 
     const update = (patch: Partial<Profile>) => {
@@ -401,15 +373,34 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                         <button
                                             type="submit"
                                             disabled={busy}
-                                            className="mt-6 w-full px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2F] transition-all duration-300 shadow-md disabled:opacity-60"
+                                            className="mt-6 w-full px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2F] transition-all duration-300 shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
                                         >
+                                            {busy && <Spinner className="w-4 h-4 text-white" />}
                                             {t.login}
                                         </button>
                                     </form>
                                 ) : !profile ? (
-                                    <p className="text-center text-[#8B7355] py-8">{error || '...'}</p>
+                                    <div className="flex flex-col items-center gap-3 py-10 text-[#8B7355]">
+                                        {error ? <p>{error}</p> : <Spinner className="w-8 h-8" />}
+                                    </div>
                                 ) : (
                                     <div className="space-y-6">
+                                        {pendingFile ? (
+                                            <ImageCropper
+                                                file={pendingFile}
+                                                language={language}
+                                                onCancel={() => setPendingFile(null)}
+                                                onError={() => {
+                                                    setPendingFile(null);
+                                                    setError(t.badImage);
+                                                }}
+                                                onDone={({ photo, thumb }) => {
+                                                    update({ photo, photo_thumb: thumb });
+                                                    setPendingFile(null);
+                                                }}
+                                            />
+                                        ) : (
+                                        <>
                                         {/* Photo */}
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
@@ -477,6 +468,9 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                             </p>
                                         </div>
 
+                                        </>
+                                        )}
+
                                         {error && <p className="text-sm text-red-600">{error}</p>}
 
                                         <div className="flex gap-3">
@@ -492,8 +486,9 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                 type="button"
                                                 onClick={handleSave}
                                                 disabled={busy}
-                                                className="flex-1 px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2F] transition-all duration-300 shadow-md disabled:opacity-60"
+                                                className="flex-1 px-4 py-3 bg-[#D4AF37] text-white rounded-lg hover:bg-[#C19B2F] transition-all duration-300 shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
                                             >
+                                                {busy && <Spinner className="w-4 h-4 text-white" />}
                                                 {saved ? t.saved : t.save}
                                             </button>
                                         </div>
