@@ -8,6 +8,7 @@ export interface WeddingUser {
     wedding_date: string;
     bio?: string | null;
     photo?: string | null;
+    photo_thumb?: string | null;
 }
 
 export function displayName(user: WeddingUser, language: string) {
@@ -162,13 +163,28 @@ function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
                                 ? 'border-[#D4AF37] bg-[#F5E9C8]'
                                 : 'border-transparent hover:bg-[#F5F3EE]'}`}
                         >
-                            <div className="flex items-center gap-2 text-[#2C2C2C]" style={{ fontFamily: bodyFont }}>
-                                {active && <Heart className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37] shrink-0" />}
-                                <span className="truncate font-medium">{displayName(user, language)}</span>
-                            </div>
-                            <div className="mt-1 text-sm text-[#8B7355]" style={{ fontFamily: bodyFont }}>
-                                {formatDate(user.wedding_date)}
-                                {done && <span className="ms-2 text-[#D4AF37]">· {doneLabel}</span>}
+                            <div className="flex items-center gap-3">
+                                {user.photo_thumb ? (
+                                    <img
+                                        src={user.photo_thumb}
+                                        alt=""
+                                        className="w-10 h-10 rounded-full object-cover border border-[#D4AF37] shrink-0"
+                                    />
+                                ) : (
+                                    <div className="w-10 h-10 rounded-full bg-[#F5E9C8] border border-[#D4AF37]/50 flex items-center justify-center shrink-0">
+                                        <Heart className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+                                    </div>
+                                )}
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 text-[#2C2C2C]" style={{ fontFamily: bodyFont }}>
+                                        {active && <Heart className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37] shrink-0" />}
+                                        <span className="truncate font-medium">{displayName(user, language)}</span>
+                                    </div>
+                                    <div className="mt-1 text-sm text-[#8B7355]" style={{ fontFamily: bodyFont }}>
+                                        {formatDate(user.wedding_date)}
+                                        {done && <span className="ms-2 text-[#D4AF37]">· {doneLabel}</span>}
+                                    </div>
+                                </div>
                             </div>
                         </button>
                     </li>

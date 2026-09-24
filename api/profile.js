@@ -13,14 +13,16 @@ export default async function handler(req, res) {
       return res.status(200).json(await getProfile(slug));
     }
     if (req.method === 'PATCH') {
-      const { bio, photo, showBio, showPhoto } = req.body || {};
+      const { bio, photo, photoThumb, showBio, showPhoto } = req.body || {};
       if (bio != null && (typeof bio !== 'string' || bio.length > MAX_BIO)) {
         return res.status(400).json({ error: 'bio is too long' });
       }
-      if (photo != null && (typeof photo !== 'string' || !photo.startsWith('data:image/') || photo.length > MAX_PHOTO)) {
-        return res.status(400).json({ error: 'invalid photo' });
+      for (const image of [photo, photoThumb]) {
+        if (image != null && (typeof image !== 'string' || !image.startsWith('data:image/') || image.length > MAX_PHOTO)) {
+          return res.status(400).json({ error: 'invalid photo' });
+        }
       }
-      return res.status(200).json(await updateProfile(slug, { bio, photo, showBio: !!showBio, showPhoto: !!showPhoto }));
+      return res.status(200).json(await updateProfile(slug, { bio, photo, photoThumb, showBio: !!showBio, showPhoto: !!showPhoto }));
     }
     if (req.method === 'DELETE') {
       // The default countdown is recreated automatically, so it can't be deleted

@@ -50,6 +50,7 @@ export function ensureUsersTable() {
       photo: 'TEXT',
       show_bio: 'INTEGER DEFAULT 1',
       show_photo: 'INTEGER DEFAULT 1',
+      photo_thumb: 'TEXT',
     };
     for (const [col, type] of Object.entries(newColumns)) {
       if (!cols.rows.some(r => r.name === col)) {
@@ -100,13 +101,15 @@ export async function addUser(name, nameEn, weddingDate, pin) {
 // Public view: bio and photo only when the owner chose to show them
 const PUBLIC_COLUMNS = `slug, name, name_en, wedding_date, created_at,
   CASE WHEN show_bio = 1 THEN bio END AS bio,
-  CASE WHEN show_photo = 1 THEN photo END AS photo`;
+  CASE WHEN show_photo = 1 THEN photo END AS photo,
+  CASE WHEN show_photo = 1 THEN photo_thumb END AS photo_thumb`;
 
 export async function listUsers() {
   await ensureUsersTable();
   // Default user first, then newest; photos are left out to keep the list small
   const { rows } = await getDb().execute(
-    `SELECT slug, name, name_en, wedding_date FROM users
+    `SELECT slug, name, name_en, wedding_date,
+      CASE WHEN show_photo = 1 THEN photo_thumb END AS photo_thumb FROM users
      ORDER BY slug = '${DEFAULT_SLUG}' DESC, id DESC LIMIT 200`
   );
   return rows;
@@ -140,17 +143,17 @@ export async function deleteUser(slug) {
 export async function getProfile(slug) {
   await ensureUsersTable();
   const { rows } = await getDb().execute({
-    sql: `SELECT slug, name, name_en, wedding_date, bio, photo, show_bio, show_photo FROM users WHERE slug = ?`,
+    sql: `SELECT slug, name, name_en, wedding_date, bio, photo, photo_thumb, show_bio, show_photo FROM users WHERE slug = ?`,
     args: [slug],
   });
   return rows[0] ?? null;
 }
 
-export async function updateProfile(slug, { bio, photo, showBio, showPhoto }) {
+export async function updateProfile(slug, { bio, photo, photoThumb, showBio, showPhoto }) {
   await ensureUsersTable();
   await getDb().execute({
-    sql: 'UPDATE users SET bio = ?, photo = ?, show_bio = ?, show_photo = ? WHERE slug = ?',
-    args: [bio || null, photo || null, showBio ? 1 : 0, showPhoto ? 1 : 0, slug],
+    sql: 'UPDATE users SET bio = ?, photo = ?, photo_thumb = ?, show_bio = ?, show_photo = ? WHERE slug = ?',
+    args: [bio || null, photo || null, photoThumb || null, showBio ? 1 : 0, showPhoto ? 1 : 0, slug],
   });
   return getProfile(slug);
 }

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { UserRound, X, ImagePlus, Trash2, LogOut, Pencil, AlertTriangle } from 'lucide-react';
 import { displayName, type WeddingUser } from '@/app/components/UsersSidebar';
 import { PasswordInput } from '@/app/components/PasswordInput';
+import { PhotoPreview } from '@/app/components/PhotoPreview';
 
 export const tokenKey = (slug: string) => `zwaj-token-${slug}`;
 
@@ -26,6 +27,7 @@ export function saveToken(slug: string, token: string | null) {
 interface Profile {
     bio: string | null;
     photo: string | null;
+    photo_thumb: string | null;
     show_bio: number;
     show_photo: number;
 }
@@ -43,19 +45,24 @@ const DEFAULT_SLUG = 'hassan';
 
 const MAX_BIO = 500;
 
-// Shrinks an image file to at most 600px and returns a JPEG data URL
-function resizeImage(file: File): Promise<string> {
+// Builds a large copy for the page and a small one for the sidebar list
+function resizeImage(file: File): Promise<{ photo: string; thumb: string }> {
     return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(file);
         const img = new Image();
-        img.onload = () => {
-            const scale = Math.min(1, 600 / Math.max(img.width, img.height));
+        const draw = (maxSize: number, quality: number) => {
+            const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
             const canvas = document.createElement('canvas');
             canvas.width = Math.round(img.width * scale);
             canvas.height = Math.round(img.height * scale);
             canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', quality);
+        };
+        img.onload = () => {
+            const photo = draw(1000, 0.85);
+            const thumb = draw(128, 0.7);
             URL.revokeObjectURL(url);
-            resolve(canvas.toDataURL('image/jpeg', 0.8));
+            resolve({ photo, thumb });
         };
         img.onerror = () => {
             URL.revokeObjectURL(url);
@@ -203,7 +210,8 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
         e.target.value = '';
         if (!file || !profile) return;
         try {
-            setProfile({ ...profile, photo: await resizeImage(file) });
+            const { photo, thumb } = await resizeImage(file);
+            setProfile({ ...profile, photo, photo_thumb: thumb });
             setSaved(false);
         } catch {
             setError(t.badImage);
@@ -221,6 +229,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                 body: JSON.stringify({
                     bio: profile.bio?.trim() || null,
                     photo: profile.photo,
+                    photoThumb: profile.photo_thumb,
                     showBio: !!profile.show_bio,
                     showPhoto: !!profile.show_photo
                 })
@@ -342,9 +351,9 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                 {!token && !showLogin ? (
                                     <div className="flex flex-col items-center text-center gap-4">
                                         {user.photo && (
-                                            <img
+                                            <PhotoPreview
                                                 src={user.photo}
-                                                alt=""
+                                                alt={displayName(user, language)}
                                                 className="w-32 h-32 rounded-full object-cover border-4 border-[#D4AF37] shadow"
                                             />
                                         )}
@@ -413,9 +422,8 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 {profile.photo ? (
-                                                    <img
+                                                    <PhotoPreview
                                                         src={profile.photo}
-                                                        alt=""
                                                         className={`w-20 h-20 rounded-full object-cover border-2 border-[#D4AF37] ${profile.show_photo ? '' : 'opacity-40'}`}
                                                     />
                                                 ) : (
@@ -434,7 +442,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                     {profile.photo && (
                                                         <button
                                                             type="button"
-                                                            onClick={() => update({ photo: null })}
+                                                            onClick={() => update({ photo: null, photo_thumb: null })}
                                                             className="text-sm px-3 py-1 text-red-600 flex items-center gap-1 hover:underline"
                                                         >
                                                             <Trash2 className="w-4 h-4" />

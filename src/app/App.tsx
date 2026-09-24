@@ -6,6 +6,7 @@ import { ShareButton } from '@/app/components/ShareButton';
 import { Celebration } from '@/app/components/Celebration';
 import { UsersSidebar, displayName, type WeddingUser } from '@/app/components/UsersSidebar';
 import { ProfileDialog, saveToken } from '@/app/components/ProfileDialog';
+import { PhotoPreview } from '@/app/components/PhotoPreview';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Maximize2, Minimize2 } from 'lucide-react';
 
@@ -221,7 +222,7 @@ export default function App() {
   const profileDetails = activeUser && (activeUser.photo || activeUser.bio) && (
     <div className="mt-6 flex flex-col items-center gap-4">
       {activeUser.photo && (
-        <img
+        <PhotoPreview
           src={activeUser.photo}
           alt={ownerName}
           className="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover border-4 border-[#D4AF37] shadow-lg"
