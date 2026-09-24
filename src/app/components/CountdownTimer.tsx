@@ -8,7 +8,7 @@ interface CountdownTimerProps {
     onComplete?: () => void;
 }
 
-type Unit = 'years' | 'months' | 'days' | 'hours' | 'minutes' | 'seconds';
+export type Unit = 'years' | 'months' | 'days' | 'hours' | 'minutes' | 'seconds';
 
 const emptyTime: Record<Unit, number> = { years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
 

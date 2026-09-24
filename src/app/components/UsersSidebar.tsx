@@ -33,7 +33,7 @@ export function UsersSidebar({
     users, activeSlug, language, isOpen, onOpenChange, isDocked, onDockedChange, onSelect
 }: UsersSidebarProps) {
     const isRTL = language === 'ar';
-    const title = isRTL ? 'العدّادات' : 'Countdowns';
+    const title = isRTL ? 'المناسبات' : 'Countdowns';
     const hideLabel = isRTL ? 'إخفاء' : 'Hide';
     const titleFont = isRTL ? 'Amiri, serif' : 'Playfair Display, serif';
     const HideIcon = isRTL ? PanelRightClose : PanelLeftClose;
@@ -143,7 +143,7 @@ interface UsersListProps {
 
 function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
     const isRTL = language === 'ar';
-    const doneLabel = isRTL ? 'تم الزفاف' : 'Married';
+    const doneLabel = isRTL ? 'انتهى العدّ' : 'Married';
     const bodyFont = isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif';
 
     const formatDate = (date: string) =>

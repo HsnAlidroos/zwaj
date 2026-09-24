@@ -180,11 +180,11 @@ export default function App() {
     },
     ar: {
       title: 'حفل زفافنا',
-      subtitle: 'العد التنازلي ليومنا الخاص',
-      footer: 'صنع بحب',
+      subtitle: 'العدّ التنازلي ليومنا المنتظر',
+      footer: 'صُنع بحب',
       by: 'بواسطة',
       fullScreen: 'ملء الشاشة',
-      exitFullScreen: 'خروج من ملء الشاشة'
+      exitFullScreen: 'إنهاء ملء الشاشة'
     }
   };
 

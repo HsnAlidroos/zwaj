@@ -26,7 +26,7 @@ export function Celebration({ language, name, details, actions, className = '', 
         ar: {
             title: 'مبارك',
             dua: 'بارك الله لكما وبارك عليكما وجمع بينكما في خير',
-            sub: 'وصل اليوم المنتظر'
+            sub: 'حلّ اليوم الموعود'
         }
     };
     const t = text[language as keyof typeof text] || text.en;

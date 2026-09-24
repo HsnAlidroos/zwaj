@@ -64,21 +64,21 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             pastError: 'Please choose a date in the future'
         },
         ar: {
-            button: 'أنشئ عدّادك',
-            title: 'أنشئ عدّاد زفافك',
-            nameArLabel: 'الاسم بالعربي',
+            button: 'ابدأ العدّ التنازلي',
+            title: 'العدّ التنازلي لزفافك',
+            nameArLabel: 'الاسم بالعربية',
             nameArPlaceholder: 'مثال: أحمد وسارة',
-            nameEnLabel: 'الاسم بالإنجليزي',
+            nameEnLabel: 'الاسم بالإنجليزية',
             nameEnPlaceholder: 'e.g. Ahmed & Sara',
             pinLabel: 'الرمز السري',
-            pinHint: 'تستخدمه لاحقاً للدخول لملفك الشخصي',
-            pinError: 'الرمز لازم يكون 4 أحرف على الأقل',
-            saving: 'جارٍ الحفظ...',
-            saveError: 'تعذّر الحفظ، حاول مرة أخرى',
+            pinHint: 'تستخدمه لاحقاً للدخول إلى ملفك الشخصي',
+            pinError: 'يجب ألا يقل الرمز عن 4 أحرف',
+            saving: 'جارٍ الحفظ…',
+            saveError: 'تعذّر الحفظ، يُرجى المحاولة مرة أخرى',
             label: 'تاريخ الزفاف',
             cancel: 'إلغاء',
-            save: 'إنشاء',
-            pastError: 'الرجاء اختيار تاريخ في المستقبل'
+            save: 'إنشاء العدّاد',
+            pastError: 'يُرجى اختيار تاريخ في المستقبل'
         }
     };
 

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Share2, X, MessageCircle, Facebook, Twitter, Linkedin, Send, Image as ImageIcon, Link2, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { intervalToDuration } from 'date-fns';
+import { pluralize, type Unit } from '@/app/components/CountdownTimer';
 
 interface ShareButtonProps {
     weddingDate: string;
@@ -38,10 +40,10 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
         },
         ar: {
             shareButton: 'مشاركة',
-            shareTitle: 'شارك يومك الخاص',
+            shareTitle: 'شارك يومك المميز',
             messagePlaceholder: 'أضف رسالة شخصية (اختياري)',
             shareVia: 'مشاركة عبر',
-            close: 'إإغلاق',
+            close: 'إغلاق',
             shareElse: 'مشاركة أخرى',
             defaultMessage: `انضموا إلينا في العد التنازلي ليوم زفافنا! 💕`,
             shareImage: 'مشاركة صورة',
@@ -49,11 +51,11 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
             download: 'تحميل',
             shareImageNative: 'مشاركة الصورة',
             back: 'عودة',
-            generating: 'جاري إنشاء الصورة...',
+            generating: 'جارٍ إنشاء الصورة…',
             cardView: 'بطاقة',
-            fullScreen: 'كامل الشاشة',
-            captureFull: 'التقاط كامل الشاشة',
-            downloadHint: 'قم بالتحميل أو استخدم زر المشاركة في الأسفل لإرسال الصورة.'
+            fullScreen: 'الشاشة كاملة',
+            captureFull: 'التقاط الشاشة كاملة',
+            downloadHint: 'حمّل الصورة أو استخدم زر المشاركة بالأسفل لإرسالها.'
         }
     };
 
@@ -72,21 +74,17 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
     const getMessage = () => {
         const now = new Date();
         const target = new Date(weddingDate);
-        const difference = target.getTime() - now.getTime();
 
         let timeString = '';
-        if (difference > 0) {
-            const totalDays = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const months = Math.floor(totalDays / 30);
-            const days = totalDays % 30;
-            const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-            const minutes = Math.floor((difference / 1000 / 60) % 60);
-
-            if (isRTL) {
-                timeString = `متبقي: ${months} شهر، ${days} يوم، ${hours} ساعة، و ${minutes} دقيقة`;
-            } else {
-                timeString = `Remaining: ${months} months, ${days} days, ${hours} hours, and ${minutes} minutes`;
-            }
+        if (target.getTime() > now.getTime()) {
+            const d = intervalToDuration({ start: now, end: target });
+            const units: Unit[] = ['years', 'months', 'days', 'hours', 'minutes'];
+            const parts = units
+                .filter(unit => (d[unit] ?? 0) > 0)
+                .map(unit => `${d[unit]} ${pluralize(unit, d[unit] ?? 0, language)}`);
+            const label = isRTL ? 'المتبقي' : 'Remaining';
+            const separator = isRTL ? '، ' : ', ';
+            timeString = parts.length ? `${label}: ${parts.join(separator)}` : '';
         }
 
         const baseMessage = customMessage || currentText.defaultMessage;
@@ -210,7 +208,7 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
                     files: [file]
                 });
             } else {
-                alert(isRTL ? 'المشاركة غير مدعومة على هذا المتصفح' : 'Sharing not supported on this browser');
+                alert(isRTL ? 'المشاركة غير مدعومة في هذا المتصفح' : 'Sharing not supported on this browser');
             }
         } catch (error: any) {
             console.error('Error sharing image:', error);
