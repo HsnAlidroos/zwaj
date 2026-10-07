@@ -27,7 +27,7 @@ export const DEFAULT_SLUG = 'hassan';
 // Keep in sync with src/app/components/ThemePicker.tsx
 export const GENDERS = ['male', 'female'];
 
-export const SOON_STYLES = ['fire', 'sparkle'];
+export const SOON_STYLES = ['none', 'fire', 'sparkle'];
 export const THEMES = ['gold', 'rose', 'sage', 'lavender', 'ocean'];
 
 let ready;

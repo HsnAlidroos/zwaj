@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { intervalToDuration } from 'date-fns';
-import { isSoon, soonLabel } from '@/app/components/soon';
+import { DEFAULT_SOON_STYLE, isSoon, soonLabel } from '@/app/components/soon';
 
 interface CountdownTimerProps {
     targetDate: string;
-    // Animation around the "soon" box; none when empty
+    // Animation around the "soon" box; sparkle when empty
     soonStyle?: string | null;
     language: string;
     onComplete?: () => void;
@@ -160,7 +160,8 @@ function TimerUnit({ value, label, language, isSeconds = false }: TimerUnitProps
 
 const soonText = 'relative bg-cream rounded-lg px-10 md:px-16 py-6 md:py-8 text-4xl md:text-6xl text-ink';
 
-function SoonBox({ style, language }: { style?: string | null; language: string }) {
+function SoonBox({ style: chosen, language }: { style?: string | null; language: string }) {
+    const style = chosen || DEFAULT_SOON_STYLE;
     const isRTL = language === 'ar';
     const font = { fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' };
 

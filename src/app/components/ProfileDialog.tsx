@@ -7,7 +7,7 @@ import { PhotoPreview } from '@/app/components/PhotoPreview';
 import { ImageCropper } from '@/app/components/ImageCropper';
 import { Spinner } from '@/app/components/Spinner';
 import { forGender } from '@/app/components/gender';
-import { isSoon, soonLabel } from '@/app/components/soon';
+import { DEFAULT_SOON_STYLE, isSoon, soonLabel } from '@/app/components/soon';
 import { ThemePicker, DEFAULT_THEME, applyTheme } from '@/app/components/ThemePicker';
 
 export const tokenKey = (slug: string) => `zwaj-token-${slug}`;
@@ -510,16 +510,16 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                 <span className="block mb-2 text-ink">{t.soonStyle}</span>
                                                 <div className="grid grid-cols-3 gap-2">
                                                     {([
-                                                        { value: null, label: t.soonNone },
+                                                        { value: 'none', label: t.soonNone },
                                                         { value: 'fire', label: t.soonFire },
                                                         { value: 'sparkle', label: t.soonSparkle }
                                                     ] as const).map(option => (
                                                         <button
                                                             key={option.label}
                                                             type="button"
-                                                            aria-pressed={(profile.soon_style || null) === option.value}
+                                                            aria-pressed={(profile.soon_style || DEFAULT_SOON_STYLE) === option.value}
                                                             onClick={() => update({ soon_style: option.value })}
-                                                            className={`px-3 py-2 rounded-lg border-2 text-sm transition-all ${(profile.soon_style || null) === option.value
+                                                            className={`px-3 py-2 rounded-lg border-2 text-sm transition-all ${(profile.soon_style || DEFAULT_SOON_STYLE) === option.value
                                                                 ? 'border-[var(--c-gold)] bg-[var(--c-gold-light)]'
                                                                 : 'border-[var(--c-gold)]/40 hover:bg-[var(--c-surface)]'}`}
                                                         >
