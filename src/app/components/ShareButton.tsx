@@ -4,6 +4,7 @@ import { Share2, X, MessageCircle, Facebook, Twitter, Linkedin, Send, Image as I
 import html2canvas from 'html2canvas';
 import { intervalToDuration } from 'date-fns';
 import { pluralize, type Unit } from '@/app/components/CountdownTimer';
+import { isSoon, soonLabel } from '@/app/components/soon';
 
 interface ShareButtonProps {
     weddingDate: string;
@@ -64,6 +65,7 @@ export function ShareButton({ weddingDate, language, captureRef }: ShareButtonPr
 
     // Format wedding date
     const formatDate = (dateString: string) => {
+        if (isSoon(dateString)) return soonLabel(language);
         const date = new Date(dateString);
         if (isRTL) {
             return date.toLocaleDateString('ar-u-ca-gregory-nu-latn', { year: 'numeric', month: 'long', day: 'numeric' });

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Users, X, Heart, PanelLeftClose, PanelRightClose, Search } from 'lucide-react';
+import { isSoon, soonLabel } from '@/app/components/soon';
 
 export interface WeddingUser {
     gender?: string | null;
@@ -223,8 +224,9 @@ function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
     const doneLabel = isRTL ? 'انتهى العدّ' : 'Married';
     const bodyFont = isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif';
 
-    const formatDate = (date: string) =>
-        new Date(date).toLocaleDateString(isRTL ? 'ar-u-ca-gregory-nu-latn' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    const formatDate = (date: string) => isSoon(date)
+        ? soonLabel(language)
+        : new Date(date).toLocaleDateString(isRTL ? 'ar-u-ca-gregory-nu-latn' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
     const groomsLabel = isRTL ? 'العرسان' : 'Grooms';
     const bridesLabel = isRTL ? 'العرائس' : 'Brides';

@@ -16,9 +16,10 @@ export default async function handler(req, res) {
       const pin = typeof req.body?.pin === 'string' ? req.body.pin : '';
       const theme = req.body?.theme ?? null;
       const gender = req.body?.gender ?? 'male';
+      const soon = weddingDate === 'soon';
       const time = new Date(weddingDate).getTime();
       if (!name || name.length > 100) return res.status(400).json({ error: 'name is required' });
-      if (Number.isNaN(time) || time <= Date.now()) return res.status(400).json({ error: 'date must be in the future' });
+      if (!soon && (Number.isNaN(time) || time <= Date.now())) return res.status(400).json({ error: 'date must be in the future' });
       if (pin.length < 4 || pin.length > 64) return res.status(400).json({ error: 'code must be 4-64 characters' });
       if (theme != null && !THEMES.includes(theme)) return res.status(400).json({ error: 'invalid theme' });
       if (!GENDERS.includes(gender)) return res.status(400).json({ error: 'invalid gender' });

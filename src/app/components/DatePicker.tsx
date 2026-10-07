@@ -3,6 +3,7 @@ import { Calendar, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PasswordInput } from '@/app/components/PasswordInput';
 import { ThemePicker, DEFAULT_THEME } from '@/app/components/ThemePicker';
+import { SOON } from '@/app/components/soon';
 
 interface DatePickerProps {
     // Receives the chosen date and names; may throw to show an error
@@ -13,6 +14,7 @@ interface DatePickerProps {
 export function DatePicker({ onSubmit, language }: DatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
+    const [soon, setSoon] = useState(false);
     const [nameAr, setNameAr] = useState('');
     const [nameEn, setNameEn] = useState('');
     const [pin, setPin] = useState('');
@@ -23,19 +25,19 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedDate || !nameAr.trim() || !nameEn.trim()) return;
+        if ((!soon && !selectedDate) || !nameAr.trim() || !nameEn.trim()) return;
         if (pin.length < 4) {
             setError(currentText.pinError);
             return;
         }
-        if (new Date(selectedDate).getTime() <= Date.now()) {
+        if (!soon && new Date(selectedDate).getTime() <= Date.now()) {
             setError(currentText.pastError);
             return;
         }
         setError('');
         setSaving(true);
         try {
-            await onSubmit(selectedDate, nameAr.trim(), nameEn.trim(), pin, theme, gender);
+            await onSubmit(soon ? SOON : selectedDate, nameAr.trim(), nameEn.trim(), pin, theme, gender);
             setIsOpen(false);
         } catch {
             setError(currentText.saveError);
@@ -68,7 +70,8 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             bride: 'Bride',
             cancel: 'Cancel',
             save: 'Create',
-            pastError: 'Please choose a date in the future'
+            pastError: 'Please choose a date in the future',
+            soon: 'Soon'
         },
         ar: {
             button: 'ابدأ العدّ التنازلي',
@@ -89,7 +92,8 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             bride: 'عروس',
             cancel: 'إلغاء',
             save: 'إنشاء العدّاد',
-            pastError: 'يُرجى اختيار تاريخ في المستقبل'
+            pastError: 'يُرجى اختيار تاريخ في المستقبل',
+            soon: 'قريباً'
         }
     };
 
@@ -239,17 +243,34 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                         >
                                             {currentText.label}
                                         </label>
-                                        <input
-                                            type="datetime-local"
-                                            value={selectedDate}
-                                            min={minDate}
-                                            onChange={(e) => {
-                                                setSelectedDate(e.target.value);
-                                                setError('');
-                                            }}
-                                            className="w-full px-4 py-3 border-2 border-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-cream"
-                                            required
-                                        />
+                                        <div className="flex gap-3">
+                                            <input
+                                                type="datetime-local"
+                                                value={selectedDate}
+                                                min={minDate}
+                                                disabled={soon}
+                                                onChange={(e) => {
+                                                    setSelectedDate(e.target.value);
+                                                    setError('');
+                                                }}
+                                                className="flex-1 min-w-0 px-4 py-3 border-2 border-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-cream disabled:opacity-40 disabled:cursor-not-allowed"
+                                                required={!soon}
+                                            />
+                                            <button
+                                                type="button"
+                                                aria-pressed={soon}
+                                                onClick={() => {
+                                                    setSoon(!soon);
+                                                    setError('');
+                                                }}
+                                                className={`shrink-0 px-4 py-3 rounded-lg border-2 transition-all ${soon
+                                                    ? 'border-[var(--c-gold)] bg-[var(--c-gold-light)]'
+                                                    : 'border-[var(--c-gold)]/40 hover:bg-[var(--c-surface)]'}`}
+                                                style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+                                            >
+                                                {currentText.soon}
+                                            </button>
+                                        </div>
                                         {error && (
                                             <p className="mt-2 text-sm text-red-600">{error}</p>
                                         )}

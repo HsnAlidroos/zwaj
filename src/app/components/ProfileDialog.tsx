@@ -7,6 +7,7 @@ import { PhotoPreview } from '@/app/components/PhotoPreview';
 import { ImageCropper } from '@/app/components/ImageCropper';
 import { Spinner } from '@/app/components/Spinner';
 import { forGender } from '@/app/components/gender';
+import { isSoon, soonLabel } from '@/app/components/soon';
 import { ThemePicker, DEFAULT_THEME, applyTheme } from '@/app/components/ThemePicker';
 
 export const tokenKey = (slug: string) => `zwaj-token-${slug}`;
@@ -352,7 +353,7 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                         </p>
                                         <p className="text-sm text-taupe">
                                             {t.weddingDate}:{' '}
-                                            {new Date(user.wedding_date).toLocaleString(isRTL ? 'ar-u-ca-gregory-nu-latn' : 'en-US', {
+                                            {isSoon(user.wedding_date) ? soonLabel(language) : new Date(user.wedding_date).toLocaleString(isRTL ? 'ar-u-ca-gregory-nu-latn' : 'en-US', {
                                                 year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit'
                                             })}
                                         </p>

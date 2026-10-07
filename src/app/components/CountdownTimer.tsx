@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { intervalToDuration } from 'date-fns';
+import { isSoon, soonLabel } from '@/app/components/soon';
 
 interface CountdownTimerProps {
     targetDate: string;
@@ -49,6 +50,8 @@ export function CountdownTimer({ targetDate, language, onComplete }: CountdownTi
 
     useEffect(() => {
         completedRef.current = false;
+        // No date yet: nothing to count, and the wedding isn't over
+        if (isSoon(targetDate)) return;
 
         const calculateTimeLeft = () => {
             const now = new Date();
@@ -80,6 +83,20 @@ export function CountdownTimer({ targetDate, language, onComplete }: CountdownTi
     }, [targetDate, onComplete]);
 
     const isRTL = language === 'ar';
+
+    if (isSoon(targetDate)) {
+        return (
+            <div className="flex justify-center">
+                <div
+                    className="bg-cream border-2 border-gold rounded-lg px-10 md:px-16 py-6 md:py-8 shadow-lg text-4xl md:text-6xl text-ink"
+                    style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
+                >
+                    {soonLabel(language)}
+                </div>
+            </div>
+        );
+    }
+
     const units: Unit[] = timeLeft.years > 0
         ? ['years', 'months', 'days', 'hours', 'minutes', 'seconds']
         : ['months', 'days', 'hours', 'minutes', 'seconds'];
