@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { intervalToDuration } from 'date-fns';
-import { isSoon, soonLabel, SOON_FIRE } from '@/app/components/soon';
+import { isSoon, soonLabel } from '@/app/components/soon';
 
 interface CountdownTimerProps {
     targetDate: string;
+    // Animation around the "soon" box; none when empty
+    soonStyle?: string | null;
     language: string;
     onComplete?: () => void;
 }
@@ -53,7 +55,7 @@ export function pluralize(unit: Unit, n: number, language: string) {
     return n === 1 ? one : other;
 }
 
-export function CountdownTimer({ targetDate, language, onComplete }: CountdownTimerProps) {
+export function CountdownTimer({ targetDate, soonStyle, language, onComplete }: CountdownTimerProps) {
     const [timeLeft, setTimeLeft] = useState(emptyTime);
     const completedRef = useRef(false);
 
@@ -93,70 +95,8 @@ export function CountdownTimer({ targetDate, language, onComplete }: CountdownTi
 
     const isRTL = language === 'ar';
 
-    if (targetDate !== SOON_FIRE && isSoon(targetDate)) {
-        return (
-            <div className="flex justify-center">
-                <div
-                    className="bg-cream border-2 border-gold rounded-lg px-10 md:px-16 py-6 md:py-8 shadow-lg text-4xl md:text-6xl text-ink"
-                    style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
-                >
-                    {soonLabel(language)}
-                </div>
-            </div>
-        );
-    }
-
     if (isSoon(targetDate)) {
-        return (
-            <div className="flex justify-center pt-10">
-                <div className="relative">
-                    {/* Flickering heat glow behind the box */}
-                    <motion.div
-                        aria-hidden="true"
-                        className="absolute -inset-3 rounded-2xl blur-xl"
-                        style={{ background: 'radial-gradient(ellipse at 50% 30%, #ffb347, #ff6a00 45%, #e8380d 70%, transparent 85%)' }}
-                        animate={{ opacity: [0.55, 0.8, 0.6, 0.9, 0.55], scale: [1, 1.04, 0.99, 1.05, 1] }}
-                        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                    />
-
-                    {/* Flames rising from the top edge */}
-                    <div aria-hidden="true" className="absolute inset-x-2 -top-1 h-0 pointer-events-none">
-                        {FLAMES.map((flame, i) => (
-                            <motion.span
-                                key={i}
-                                className="absolute bottom-0 rounded-full blur-[2px]"
-                                style={{
-                                    left: `${flame.x}%`,
-                                    width: flame.size,
-                                    height: flame.size * 1.6,
-                                    background: 'radial-gradient(ellipse at 50% 70%, #fff3b0, #ffb347 35%, #ff6a00 65%, transparent 80%)',
-                                    borderRadius: '50% 50% 45% 45% / 65% 65% 35% 35%'
-                                }}
-                                animate={{ y: [0, -flame.rise], opacity: [0, 1, 0], scale: [0.8, 1.1, 0.3] }}
-                                transition={{ duration: flame.duration, delay: flame.delay, repeat: Infinity, ease: 'easeOut' }}
-                            />
-                        ))}
-                    </div>
-
-                    {/* Rotating fire border */}
-                    <div className="relative rounded-xl p-[3px] overflow-hidden shadow-lg">
-                        <motion.div
-                            aria-hidden="true"
-                            className="absolute -inset-[100%]"
-                            style={{ background: 'conic-gradient(from 0deg, #ff6a00, #ffd56b, #e8380d, #ffb347, #ff6a00)' }}
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                        />
-                        <div
-                            className="relative bg-cream rounded-lg px-10 md:px-16 py-6 md:py-8 text-4xl md:text-6xl text-ink"
-                            style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
-                        >
-                            {soonLabel(language)}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+        return <SoonBox style={soonStyle} language={language} />;
     }
 
     const units: Unit[] = timeLeft.years > 0
@@ -217,3 +157,135 @@ function TimerUnit({ value, label, language, isSeconds = false }: TimerUnitProps
         </div>
     );
 }
+
+const soonText = 'relative bg-cream rounded-lg px-10 md:px-16 py-6 md:py-8 text-4xl md:text-6xl text-ink';
+
+function SoonBox({ style, language }: { style?: string | null; language: string }) {
+    const isRTL = language === 'ar';
+    const font = { fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' };
+
+    if (style === 'fire') {
+        return (
+            <div className="flex justify-center pt-10">
+                <div className="relative">
+                    {/* Flickering heat glow behind the box */}
+                    <motion.div
+                        aria-hidden="true"
+                        className="absolute -inset-3 rounded-2xl blur-xl"
+                        style={{ background: 'radial-gradient(ellipse at 50% 30%, #ffb347, #ff6a00 45%, #e8380d 70%, transparent 85%)' }}
+                        animate={{ opacity: [0.55, 0.8, 0.6, 0.9, 0.55], scale: [1, 1.04, 0.99, 1.05, 1] }}
+                        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+
+                    {/* Flames rising from the top edge */}
+                    <div aria-hidden="true" className="absolute inset-x-2 -top-1 h-0 pointer-events-none">
+                        {FLAMES.map((flame, i) => (
+                            <motion.span
+                                key={i}
+                                className="absolute bottom-0 rounded-full blur-[2px]"
+                                style={{
+                                    left: `${flame.x}%`,
+                                    width: flame.size,
+                                    height: flame.size * 1.6,
+                                    background: 'radial-gradient(ellipse at 50% 70%, #fff3b0, #ffb347 35%, #ff6a00 65%, transparent 80%)',
+                                    borderRadius: '50% 50% 45% 45% / 65% 65% 35% 35%'
+                                }}
+                                animate={{ y: [0, -flame.rise], opacity: [0, 1, 0], scale: [0.8, 1.1, 0.3] }}
+                                transition={{ duration: flame.duration, delay: flame.delay, repeat: Infinity, ease: 'easeOut' }}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Rotating fire border */}
+                    <div className="relative rounded-xl p-[3px] overflow-hidden shadow-lg">
+                        <motion.div
+                            aria-hidden="true"
+                            className="absolute -inset-[100%]"
+                            style={{ background: 'conic-gradient(from 0deg, #ff6a00, #ffd56b, #e8380d, #ffb347, #ff6a00)' }}
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                        />
+                        <div className={soonText} style={font}>{soonLabel(language)}</div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (style === 'sparkle') {
+        return (
+            <div className="flex justify-center py-6">
+                <div className="relative">
+                    {/* Soft breathing halo in the theme color */}
+                    <motion.div
+                        aria-hidden="true"
+                        className="absolute -inset-5 rounded-3xl blur-2xl"
+                        style={{ background: 'radial-gradient(ellipse, var(--c-gold-soft), var(--c-gold-light) 50%, transparent 75%)' }}
+                        animate={{ opacity: [0.35, 0.75, 0.35], scale: [0.97, 1.04, 0.97] }}
+                        transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+
+                    {/* A light streak travelling around the border */}
+                    <div className="relative rounded-xl p-[3px] overflow-hidden shadow-lg" style={{ background: 'var(--c-gold-light)' }}>
+                        <motion.div
+                            aria-hidden="true"
+                            className="absolute -inset-[100%]"
+                            style={{ background: 'conic-gradient(from 0deg, transparent 0 55%, var(--c-gold-soft) 70%, var(--c-gold) 85%, var(--c-gold-deep) 92%, transparent 100%)' }}
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                        />
+                        <div className={soonText} style={font}>
+                            {/* Shimmer passing over the text */}
+                            <motion.span
+                                className="inline-block bg-clip-text text-transparent"
+                                style={{
+                                    backgroundImage: 'linear-gradient(110deg, var(--c-ink) 35%, var(--c-gold) 50%, var(--c-ink) 65%)',
+                                    backgroundSize: '250% 100%',
+                                    WebkitBackgroundClip: 'text'
+                                }}
+                                animate={{ backgroundPosition: ['100% 0', '-150% 0'] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', repeatDelay: 0.8 }}
+                            >
+                                {soonLabel(language)}
+                            </motion.span>
+                        </div>
+                    </div>
+
+                    {/* Twinkling stars around the box */}
+                    {SPARKLES.map((sparkle, i) => (
+                        <motion.span
+                            key={i}
+                            aria-hidden="true"
+                            className="absolute pointer-events-none leading-none"
+                            style={{ ...sparkle.pos, fontSize: sparkle.size, color: 'var(--c-gold)' }}
+                            animate={{ opacity: [0, 1, 0], scale: [0.4, 1.1, 0.4], rotate: [0, 90] }}
+                            transition={{ duration: 2.2, delay: sparkle.delay, repeat: Infinity, ease: 'easeInOut' }}
+                        >
+                            ✦
+                        </motion.span>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex justify-center">
+            <div className={`${soonText} border-2 border-gold shadow-lg`} style={font}>
+                {soonLabel(language)}
+            </div>
+        </div>
+    );
+}
+
+// Star positions just outside the box edges
+const SPARKLES = [
+    { pos: { top: -14, left: '12%' }, size: 16, delay: 0 },
+    { pos: { top: -18, right: '18%' }, size: 12, delay: 0.7 },
+    { pos: { bottom: -16, left: '30%' }, size: 12, delay: 1.3 },
+    { pos: { bottom: -12, right: '8%' }, size: 16, delay: 0.4 },
+    { pos: { top: '35%', left: -20 }, size: 14, delay: 1 },
+    { pos: { top: '20%', right: -20 }, size: 12, delay: 1.6 },
+    { pos: { bottom: '15%', left: -14 }, size: 10, delay: 1.9 },
+    { pos: { bottom: '25%', right: -16 }, size: 10, delay: 0.2 }
+];

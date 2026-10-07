@@ -27,6 +27,7 @@ export const DEFAULT_SLUG = 'hassan';
 // Keep in sync with src/app/components/ThemePicker.tsx
 export const GENDERS = ['male', 'female'];
 
+export const SOON_STYLES = ['fire', 'sparkle'];
 export const THEMES = ['gold', 'rose', 'sage', 'lavender', 'ocean'];
 
 let ready;
@@ -59,6 +60,7 @@ export function ensureUsersTable() {
       theme: 'TEXT',
       gender: "TEXT DEFAULT 'male'",
       show_role: 'INTEGER DEFAULT 1',
+      soon_style: 'TEXT',
     };
     for (const [col, type] of Object.entries(newColumns)) {
       if (!cols.rows.some(r => r.name === col)) {
@@ -67,6 +69,8 @@ export function ensureUsersTable() {
     }
     // Everyone created before genders existed counts as male
     await getDb().execute("UPDATE users SET gender = 'male' WHERE gender IS NULL");
+    // The fire style used to be stored in wedding_date
+    await getDb().execute("UPDATE users SET wedding_date = 'soon', soon_style = 'fire' WHERE wedding_date = 'soon-fire'");
     // The default countdown shown on the home page
     await getDb().execute({
       sql: `INSERT INTO users (slug, name, name_en, wedding_date) VALUES (?, ?, ?, ?)
@@ -109,7 +113,7 @@ export async function addUser(name, nameEn, weddingDate, pin, theme, gender) {
 }
 
 // Public view: bio and photo only when the owner chose to show them
-const PUBLIC_COLUMNS = `slug, name, name_en, wedding_date, created_at, theme, gender, show_role,
+const PUBLIC_COLUMNS = `slug, name, name_en, wedding_date, created_at, theme, gender, show_role, soon_style,
   CASE WHEN show_bio = 1 THEN bio END AS bio,
   CASE WHEN show_photo = 1 THEN photo END AS photo,
   CASE WHEN show_photo = 1 THEN photo_thumb END AS photo_thumb`;
@@ -153,17 +157,17 @@ export async function deleteUser(slug) {
 export async function getProfile(slug) {
   await ensureUsersTable();
   const { rows } = await getDb().execute({
-    sql: `SELECT slug, name, name_en, wedding_date, bio, photo, photo_thumb, show_bio, show_photo, show_role, theme, gender FROM users WHERE slug = ?`,
+    sql: `SELECT slug, name, name_en, wedding_date, bio, photo, photo_thumb, show_bio, show_photo, show_role, theme, gender, soon_style FROM users WHERE slug = ?`,
     args: [slug],
   });
   return rows[0] ?? null;
 }
 
-export async function updateProfile(slug, { bio, photo, photoThumb, showBio, showPhoto, showRole, theme }) {
+export async function updateProfile(slug, { bio, photo, photoThumb, showBio, showPhoto, showRole, theme, soonStyle }) {
   await ensureUsersTable();
   await getDb().execute({
-    sql: 'UPDATE users SET bio = ?, photo = ?, photo_thumb = ?, show_bio = ?, show_photo = ?, show_role = ?, theme = ? WHERE slug = ?',
-    args: [bio || null, photo || null, photoThumb || null, showBio ? 1 : 0, showPhoto ? 1 : 0, showRole ? 1 : 0, theme || null, slug],
+    sql: 'UPDATE users SET bio = ?, photo = ?, photo_thumb = ?, show_bio = ?, show_photo = ?, show_role = ?, theme = ?, soon_style = ? WHERE slug = ?',
+    args: [bio || null, photo || null, photoThumb || null, showBio ? 1 : 0, showPhoto ? 1 : 0, showRole ? 1 : 0, theme || null, soonStyle || null, slug],
   });
   return getProfile(slug);
 }

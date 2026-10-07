@@ -37,6 +37,7 @@ interface Profile {
     show_role: number;
     show_photo: number;
     theme: string | null;
+    soon_style: string | null;
 }
 
 interface ProfileDialogProps {
@@ -97,6 +98,10 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
             showRole: 'Show groom/bride label',
             showPhoto: 'Show photo',
             theme: 'Site colors',
+            soonStyle: '"Soon" animation',
+            soonNone: 'None',
+            soonFire: 'Fire 🔥',
+            soonSparkle: 'Sparkle ✦',
             save: 'Save',
             saved: 'Saved ✓',
             logout: 'Sign out',
@@ -128,6 +133,10 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
             showRole: 'إظهار (عريس/عروس)',
             showPhoto: 'إظهار الصورة',
             theme: 'ألوان الصفحة',
+            soonStyle: 'حركة "قريباً"',
+            soonNone: 'بدون',
+            soonFire: 'نار 🔥',
+            soonSparkle: 'لمعان ✦',
             save: 'حفظ',
             saved: 'تم الحفظ ✓',
             logout: 'تسجيل خروج',
@@ -218,7 +227,8 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                     showBio: !!profile.show_bio,
                     showRole: !!profile.show_role,
                     showPhoto: !!profile.show_photo,
-                    theme: profile.theme || DEFAULT_THEME
+                    theme: profile.theme || DEFAULT_THEME,
+                    soonStyle: profile.soon_style || null
                 })
             });
             if (!res.ok) throw new Error('Failed');
@@ -493,6 +503,32 @@ export function ProfileDialog({ user, language, onSaved, onDeleted }: ProfileDia
                                                 onChange={(theme) => update({ theme })}
                                             />
                                         </div>
+
+                                        {/* Animation around the "soon" box, only when there's no date yet */}
+                                        {isSoon(user.wedding_date) && (
+                                            <div>
+                                                <span className="block mb-2 text-ink">{t.soonStyle}</span>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {([
+                                                        { value: null, label: t.soonNone },
+                                                        { value: 'fire', label: t.soonFire },
+                                                        { value: 'sparkle', label: t.soonSparkle }
+                                                    ] as const).map(option => (
+                                                        <button
+                                                            key={option.label}
+                                                            type="button"
+                                                            aria-pressed={(profile.soon_style || null) === option.value}
+                                                            onClick={() => update({ soon_style: option.value })}
+                                                            className={`px-3 py-2 rounded-lg border-2 text-sm transition-all ${(profile.soon_style || null) === option.value
+                                                                ? 'border-[var(--c-gold)] bg-[var(--c-gold-light)]'
+                                                                : 'border-[var(--c-gold)]/40 hover:bg-[var(--c-surface)]'}`}
+                                                        >
+                                                            {option.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
 
                                         </>
                                         )}

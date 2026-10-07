@@ -3,7 +3,7 @@ import { Calendar, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PasswordInput } from '@/app/components/PasswordInput';
 import { ThemePicker, DEFAULT_THEME } from '@/app/components/ThemePicker';
-import { SOON, SOON_FIRE } from '@/app/components/soon';
+import { SOON } from '@/app/components/soon';
 
 interface DatePickerProps {
     // Receives the chosen date and names; may throw to show an error
@@ -14,8 +14,7 @@ interface DatePickerProps {
 export function DatePicker({ onSubmit, language }: DatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
-    // '' = a real date, otherwise one of the "soon" styles
-    const [soon, setSoon] = useState('');
+    const [soon, setSoon] = useState(false);
     const [nameAr, setNameAr] = useState('');
     const [nameEn, setNameEn] = useState('');
     const [pin, setPin] = useState('');
@@ -38,7 +37,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
         setError('');
         setSaving(true);
         try {
-            await onSubmit(soon || selectedDate, nameAr.trim(), nameEn.trim(), pin, theme, gender);
+            await onSubmit(soon ? SOON : selectedDate, nameAr.trim(), nameEn.trim(), pin, theme, gender);
             setIsOpen(false);
         } catch {
             setError(currentText.saveError);
@@ -72,8 +71,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             cancel: 'Cancel',
             save: 'Create',
             pastError: 'Please choose a date in the future',
-            soon: 'Soon',
-            soonFire: 'Soon 🔥'
+            soon: 'Soon'
         },
         ar: {
             button: 'ابدأ العدّ التنازلي',
@@ -95,8 +93,7 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
             cancel: 'إلغاء',
             save: 'إنشاء العدّاد',
             pastError: 'يُرجى اختيار تاريخ في المستقبل',
-            soon: 'قريباً',
-            soonFire: 'قريباً 🔥'
+            soon: 'قريباً'
         }
     };
 
@@ -259,26 +256,20 @@ export function DatePicker({ onSubmit, language }: DatePickerProps) {
                                                 className="basis-full sm:basis-0 flex-1 min-w-0 px-4 py-3 border-2 border-gold rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-cream disabled:opacity-40 disabled:cursor-not-allowed"
                                                 required={!soon}
                                             />
-                                            {([
-                                                { value: SOON, label: currentText.soon },
-                                                { value: SOON_FIRE, label: currentText.soonFire }
-                                            ]).map(option => (
-                                                <button
-                                                    key={option.value}
-                                                    type="button"
-                                                    aria-pressed={soon === option.value}
-                                                    onClick={() => {
-                                                        setSoon(soon === option.value ? '' : option.value);
-                                                        setError('');
-                                                    }}
-                                                    className={`flex-1 sm:flex-none shrink-0 px-4 py-3 rounded-lg border-2 transition-all ${soon === option.value
-                                                        ? 'border-[var(--c-gold)] bg-[var(--c-gold-light)]'
-                                                        : 'border-[var(--c-gold)]/40 hover:bg-[var(--c-surface)]'}`}
-                                                    style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
-                                                >
-                                                    {option.label}
-                                                </button>
-                                            ))}
+                                            <button
+                                                type="button"
+                                                aria-pressed={soon}
+                                                onClick={() => {
+                                                    setSoon(!soon);
+                                                    setError('');
+                                                }}
+                                                className={`flex-1 sm:flex-none shrink-0 px-4 py-3 rounded-lg border-2 transition-all ${soon
+                                                    ? 'border-[var(--c-gold)] bg-[var(--c-gold-light)]'
+                                                    : 'border-[var(--c-gold)]/40 hover:bg-[var(--c-surface)]'}`}
+                                                style={{ fontFamily: isRTL ? 'IBM Plex Sans Arabic, sans-serif' : 'Inter, sans-serif' }}
+                                            >
+                                                {currentText.soon}
+                                            </button>
                                         </div>
                                         {error && (
                                             <p className="mt-2 text-sm text-red-600">{error}</p>

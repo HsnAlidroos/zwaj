@@ -435,7 +435,7 @@ export default function App() {
             {isLoadingUsers && !activeUser ? (
               <CountdownSkeleton />
             ) : (
-              <CountdownTimer targetDate={weddingDate} language={language} onComplete={handleComplete} />
+              <CountdownTimer targetDate={weddingDate} soonStyle={activeUser?.soon_style} language={language} onComplete={handleComplete} />
             )}
           </motion.div>
 

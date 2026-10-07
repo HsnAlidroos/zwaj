@@ -1,10 +1,11 @@
 // A countdown can be created before the date is set; wedding_date is then stored as 'soon'
-// 'soon-fire' is the same, shown with a fire animation around it
 export const SOON = 'soon';
-export const SOON_FIRE = 'soon-fire';
+
+// Optional animation around the "soon" box, chosen from the profile (off by default)
+export type SoonStyle = 'fire' | 'sparkle';
 
 export function isSoon(date?: string | null) {
-    return date === SOON || date === SOON_FIRE;
+    return date === SOON;
 }
 
 export function soonLabel(language: string) {

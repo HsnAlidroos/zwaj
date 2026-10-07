@@ -14,6 +14,7 @@ export interface WeddingUser {
     photo?: string | null;
     photo_thumb?: string | null;
     theme?: string | null;
+    soon_style?: string | null;
 }
 
 export function displayName(user: WeddingUser, language: string) {
