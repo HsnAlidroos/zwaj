@@ -232,8 +232,11 @@ function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
     const groomsLabel = isRTL ? 'العرسان' : 'Grooms';
     const bridesLabel = isRTL ? 'العرائس' : 'Brides';
 
-    const grooms = users.filter(user => user.gender !== 'female');
-    const brides = users.filter(user => user.gender === 'female');
+    // Countdowns without a date yet get their own group
+    const soon = users.filter(user => isSoon(user.wedding_date));
+    const dated = users.filter(user => !isSoon(user.wedding_date));
+    const grooms = dated.filter(user => user.gender !== 'female');
+    const brides = dated.filter(user => user.gender === 'female');
 
     const row = (user: WeddingUser) => {
         const active = user.slug === activeSlug;
@@ -295,6 +298,7 @@ function UsersList({ users, activeSlug, language, onSelect }: UsersListProps) {
         <ul className="flex-1 overflow-y-auto p-3 space-y-4">
             {group(groomsLabel, '🤵', grooms)}
             {group(bridesLabel, '👰', brides)}
+            {group(soonLabel(language), '✨', soon)}
         </ul>
     );
 }
