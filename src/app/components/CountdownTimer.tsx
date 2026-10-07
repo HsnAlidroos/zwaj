@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { intervalToDuration } from 'date-fns';
-import { isSoon, soonLabel } from '@/app/components/soon';
+import { isSoon, soonLabel, SOON_FIRE } from '@/app/components/soon';
 
 interface CountdownTimerProps {
     targetDate: string;
@@ -92,6 +92,19 @@ export function CountdownTimer({ targetDate, language, onComplete }: CountdownTi
     }, [targetDate, onComplete]);
 
     const isRTL = language === 'ar';
+
+    if (targetDate !== SOON_FIRE && isSoon(targetDate)) {
+        return (
+            <div className="flex justify-center">
+                <div
+                    className="bg-cream border-2 border-gold rounded-lg px-10 md:px-16 py-6 md:py-8 shadow-lg text-4xl md:text-6xl text-ink"
+                    style={{ fontFamily: isRTL ? 'Amiri, serif' : 'Playfair Display, serif' }}
+                >
+                    {soonLabel(language)}
+                </div>
+            </div>
+        );
+    }
 
     if (isSoon(targetDate)) {
         return (
