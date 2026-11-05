@@ -22,6 +22,8 @@ const FLAMES = Array.from({ length: 14 }, (_, i) => ({
 
 export type Unit = 'years' | 'months' | 'days' | 'hours' | 'minutes' | 'seconds';
 
+const allUnits: Unit[] = ['years', 'months', 'days', 'hours', 'minutes', 'seconds'];
+
 const emptyTime: Record<Unit, number> = { years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
 
 // Arabic forms: [singular, dual, plural (3-10), accusative singular (11+)]
@@ -99,9 +101,10 @@ export function CountdownTimer({ targetDate, soonStyle, language, onComplete }: 
         return <SoonBox style={soonStyle} language={language} />;
     }
 
-    const units: Unit[] = timeLeft.years > 0
-        ? ['years', 'months', 'days', 'hours', 'minutes', 'seconds']
-        : ['months', 'days', 'hours', 'minutes', 'seconds'];
+    // Drop leading empty units; a zero after the first shown unit stays visible.
+    // All zero means not calculated yet or finished: keep the full layout.
+    const firstUnit = allUnits.findIndex(unit => timeLeft[unit] > 0);
+    const units = allUnits.slice(firstUnit === -1 ? 1 : firstUnit);
 
     return (
         <div
